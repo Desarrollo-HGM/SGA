@@ -21,3 +21,4 @@ export const db = knex({
   },
   pool: { min: 0, max: 7 },
 });
+//prueba2
