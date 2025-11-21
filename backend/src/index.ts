@@ -24,4 +24,4 @@ app.get('/', async (_req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor backend escuchando en http://localhost:${PORT}`);
 });
-//prueba4
+//prueba10
