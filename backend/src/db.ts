@@ -21,4 +21,12 @@ export const db = knex({
   },
   pool: { min: 0, max: 7 },
 });
-//prueba4
+
+// 🔍 Verificar conexión
+db.raw('SELECT 1')
+  .then(() => {
+    console.log('✅ Conexión a la base de datos exitosa');
+  })
+  .catch((err) => {
+    console.error('❌ Error al conectar a la base de datos:', err.message);
+  });
