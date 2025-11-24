@@ -1,15 +1,22 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { db } from './db.js';
+import { db } from './config/db.js';
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config({ path: '.env.local' });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL, // ✅ origen permitido
+  credentials: true
+}));
+
 app.use(express.json());
+
+app.use("/auth", authRoutes);
 
 app.get('/', async (_req, res) => {
   try {
@@ -24,4 +31,3 @@ app.get('/', async (_req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor backend escuchando en http://localhost:${PORT}`);
 });
-//prueba10
