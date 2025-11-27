@@ -1,14 +1,29 @@
-// src/routes/PrivateRoute.tsx
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { useContext } from "react";
 import type { ReactElement } from "react";
+import { AuthContext } from "../context/AuthContext";
+import type { User } from "../types/User";
 
-export default function PrivateRoute({ children }: { children: ReactElement }) {
-  const { token } = useAuth();
+interface ProtectedRouteProps {
+  children: ReactElement; // 👈 más estricto que ReactNode
+  allowedRoles: User["role"][];
+}
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
+export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+  const auth = useContext(AuthContext);
+  console.log("🛡️ ProtectedRoute check:", { user: auth?.user, allowedRoles });
+
+  if (!auth?.user) {
+    console.warn("🚫 ProtectedRoute: no hay usuario, redirigiendo a /");
+    return <Navigate to="/" replace />;
   }
 
+  if (!allowedRoles.includes(auth.user.role)) {
+    console.warn("🚫 ProtectedRoute: rol no permitido:", auth.user.role);
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  console.log("✅ ProtectedRoute: acceso permitido, renderizando children");
   return children;
 }
+

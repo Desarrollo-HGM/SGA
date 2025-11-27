@@ -1,23 +1,58 @@
 // src/routes/AppRouter.tsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "../pages/Login";
-import Dashboard from "../pages/Dashboard";
-import PrivateRoute from "./PrivateRoute";
+import DashboardLayout from "../components/DashboardLayout";
+import Inventario from "../pages/Inventario";
+import Solicitudes from "../pages/Solicitudes";
+import Movimientos from "../pages/Movimientos";
+import Reportes from "../pages/Reportes";
+import ProtectedRoute from "./PrivateRoute";
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
         <Route
           path="/dashboard"
           element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
+            <ProtectedRoute allowedRoles={["Administrador", "Usuario"]}>
+              <DashboardLayout>
+                <Inventario />
+              </DashboardLayout>
+            </ProtectedRoute>
           }
         />
-        <Route path="*" element={<Login />} />
+        <Route
+          path="/solicitudes"
+          element={
+            <ProtectedRoute allowedRoles={["Administrador", "Usuario"]}>
+              <DashboardLayout>
+                <Solicitudes />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/movimientos"
+          element={
+            <ProtectedRoute allowedRoles={["Administrador"]}>
+              <DashboardLayout>
+                <Movimientos />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reportes"
+          element={
+            <ProtectedRoute allowedRoles={["Administrador"]}>
+              <DashboardLayout>
+                <Reportes />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

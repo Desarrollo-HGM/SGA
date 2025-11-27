@@ -12,15 +12,16 @@ export default function Login() {
   const [error, setError] = useState("");
 
    const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await login(username, password);
-      console.log("✅ Login correcto");
-      navigate("/dashboard"); // 🚀 redirige al dashboard
-    } catch {
-      setError("Credenciales inválidas");
-    }
-  };
+  e.preventDefault();
+  try {
+    const { user, token } = await login(username, password);
+    console.log("✅ Login correcto:", { user, token }); // 👈 log completo
+    navigate("/dashboard");
+  } catch {
+    setError("Credenciales inválidas");
+  }
+};
+
 
   return (
     <div className="login-container">
