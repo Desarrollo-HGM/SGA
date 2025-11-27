@@ -1,5 +1,5 @@
 // src/pages/Login.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css"; 
@@ -11,17 +11,35 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-   const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   try {
     const { user, token } = await login(username, password);
-    console.log("✅ Login correcto:", { user, token }); // 👈 log completo
+    console.log("✅ Login correcto:", { user, token });
     navigate("/dashboard");
-  } catch {
-    setError("Credenciales inválidas");
+  } catch (err: any) {
+    console.error("❌ Error en login:", err);
+
+    // Si es Axios, puedes ver la respuesta del servidor
+    if (err.response) {
+      console.error("📡 Respuesta del servidor:", err.response.data);
+      setError(err.response.data.message || "Credenciales inválidas");
+    } else if (err.request) {
+      console.error("📡 No hubo respuesta del servidor:", err.request);
+      setError("No se pudo conectar al servidor");
+    } else {
+      console.error("📡 Error inesperado:", err.message);
+      setError("Error inesperado en login");
+    }
   }
 };
 
+
+useEffect(() => {
+  if (user && token) {
+    navigate("/dashboard");
+  }
+}, [user, token, navigate]);
 
   return (
     <div className="login-container">

@@ -1,0 +1,27 @@
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+#nav-bar {
+  background: var(--navbar-dark-primary);
+  transition: width 0.3s ease;
+  overflow: hidden;
+
+  #nav-bar {
+  width: var(--navbar-width);
+}
+
+#nav-toggle:checked ~ #nav-bar {
+  width: var(--navbar-width-min);
+}
+}
+
+.app-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background: #f5f6fa;
+}
+

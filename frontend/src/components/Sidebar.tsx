@@ -4,16 +4,25 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { menuItems } from "../components/menuItems";
 import "../styles/sidebar.scss";
+import { useAuth } from "../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+
 
 export default function Sidebar() {
   const location = useLocation();
   const auth = useContext(AuthContext);
-
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   if (!auth?.user) return null;
   const { user } = auth;
 
   // Filtrar items según rol
   const filteredMenu = menuItems.filter(item => item.roles.includes(user.role));
+
+const handleLogout = () => {
+    logout(); // limpia token y usuario
+    navigate("/login"); // redirige al login
+  };
 
   return (
     <nav id="nav-bar">
@@ -75,6 +84,10 @@ export default function Sidebar() {
         <div id="nav-footer-content">
           {/* Aquí puedes poner info dinámica del usuario o dejarlo como placeholder */}
           Bienvenido al sistema de gestión.
+           <button className="nav-button logout" onClick={handleLogout}>
+          <i className="fas fa-sign-out-alt"></i>
+          <span>Salir</span>
+        </button>
         </div>
       </div>
     </nav>
