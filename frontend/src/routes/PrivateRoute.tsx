@@ -15,7 +15,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
 
   if (!auth?.user) {
     console.warn("🚫 ProtectedRoute: no hay usuario, redirigiendo a /");
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (!allowedRoles.includes(auth.user.role)) {
