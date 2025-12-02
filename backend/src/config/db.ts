@@ -1,17 +1,26 @@
-import knex from 'knex';
-import dotenv from 'dotenv';
+// src/config/db.ts
+import knex from "knex";
+import dotenv from "dotenv";
+import { logger } from "./logger.js"; // ✅ usamos Winston
 
 // Cargar variables de entorno ANTES de leerlas
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
 
 if (!DB_HOST || !DB_PORT || !DB_USER || !DB_PASSWORD || !DB_NAME) {
-  throw new Error('Faltan variables de entorno para la conexión a la base de datos');
+  logger.error("[DB] Faltan variables de entorno para la conexión a la base de datos", {
+    DB_HOST,
+    DB_PORT,
+    DB_USER,
+    DB_PASSWORD,
+    DB_NAME,
+  });
+  throw new Error("Faltan variables de entorno para la conexión a la base de datos");
 }
 
 export const db = knex({
-  client: 'mysql2',
+  client: "mysql2",
   connection: {
     host: DB_HOST,
     port: Number(DB_PORT),
@@ -23,10 +32,10 @@ export const db = knex({
 });
 
 // 🔍 Verificar conexión
-db.raw('SELECT 1')
+db.raw("SELECT 1")
   .then(() => {
-    console.log('✅ Conexión a la base de datos exitosa');
+    logger.info("[DB] Conexión a la base de datos exitosa", { host: DB_HOST, database: DB_NAME });
   })
   .catch((err) => {
-    console.error('❌ Error al conectar a la base de datos:', err.message);
+    logger.error("[DB] Error al conectar a la base de datos", { error: err.message });
   });

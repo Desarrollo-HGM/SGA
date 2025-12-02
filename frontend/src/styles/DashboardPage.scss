@@ -1,0 +1,17 @@
+// src/styles/DashboardPage.scss
+.dashboard-page {
+  padding: 2rem;
+  background-color: $background-color;
+  font-family: $font-family;
+
+  h1 {
+    margin-bottom: 1.5rem;
+    color: $primary-color;
+  }
+
+  .dashboard-kpis {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+}

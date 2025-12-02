@@ -1,118 +1,56 @@
-// src/pages/Dashboard.tsx
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../context/AuthContext";
-import "../styles/dashboard.scss";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../hooks/useAuth";
+import api from "../config/api"; // tu servicio axios
+import KpiCard from "../components/KpiCard";
+import RecentMovements from "../components/RecentMovements";
 
-interface DashboardData {
-  inventario: number;
-  solicitudes: number;
-  movimientos: number;
-  reportes: number;
-}
-
-export default function Dashboard() {
-  const { user } = useContext(AuthContext);
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+const DashboardPage: React.FC = () => {
+  const { user } = useAuth();
+  const [stock, setStock] = useState<any[]>([]);
+  const [solicitudesPendientes, setSolicitudesPendientes] = useState<number>(0);
+  const [movimientos, setMovimientos] = useState<any[]>([]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const fetchData = async () => {
+      try {
+        const stockRes = await api.get("/api/stock/consolidado");
+        setStock(stockRes.data);
 
-    if (!token) {
-      console.warn("⚠️ No hay token, usando mock temporal");
-      // Mock temporal
-      setTimeout(() => {
-        setData({
-          inventario: 1245,
-          solicitudes: 87,
-          movimientos: 320,
-          reportes: 12,
-        });
-        setLoading(false);
-      }, 1000);
-      return;
-    }
+        const solicitudesRes = await api.get("/api/solicitudes?estado=Pendiente");
+        setSolicitudesPendientes(solicitudesRes.data.length);
 
-    // Aquí iría tu llamada real al backend
-    fetch("/api/dashboard", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => {
-        if (!res.ok) throw new Error("Error en la API");
-        return res.json();
-      })
-      .then(json => {
-        setData(json);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Error cargando dashboard:", err);
-        // fallback mock si falla la API
-        setData({
-          inventario: 1245,
-          solicitudes: 87,
-          movimientos: 320,
-          reportes: 12,
-        });
-        setLoading(false);
-      });
+        const movimientosRes = await api.get("/api/movimientos?limit=5");
+        setMovimientos(movimientosRes.data);
+      } catch (err) {
+        console.error("Error cargando dashboard", err);
+      }
+    };
+    fetchData();
   }, []);
 
-  if (loading) return <div>Cargando métricas...</div>;
-
   return (
-    <div className="dashboard">
-      <h1 className="dashboard-title">Panel de Control</h1>
-
-      <div className="dashboard-cards">
-        <div className="card kpi">
-          <div className="card-icon">
-            <i className="fas fa-box"></i>
-          </div>
-          <div className="card-content">
-            <span className="card-title">Inventario</span>
-            <span className="card-value">{data?.inventario} items</span>
-          </div>
-        </div>
-
-        <div className="card kpi">
-          <div className="card-icon">
-            <i className="fas fa-file-alt"></i>
-          </div>
-          <div className="card-content">
-            <span className="card-title">Solicitudes</span>
-            <span className="card-value">{data?.solicitudes} activas</span>
-          </div>
-        </div>
-
-        <div className="card kpi">
-          <div className="card-icon">
-            <i className="fas fa-exchange-alt"></i>
-          </div>
-          <div className="card-content">
-            <span className="card-title">Movimientos</span>
-            <span className="card-value">{data?.movimientos} este mes</span>
-          </div>
-        </div>
-
-        <div className="card kpi">
-          <div className="card-icon">
-            <i className="fas fa-chart-line"></i>
-          </div>
-          <div className="card-content">
-            <span className="card-title">Reportes</span>
-            <span className="card-value">{data?.reportes} generados</span>
-          </div>
-        </div>
+    <div className="dashboard-page">
+      <h1>Bienvenido, {user?.username}</h1>
+      <div className="dashboard-kpis">
+        <KpiCard
+          title="Stock bajo mínimo"
+          value={stock.filter(s => s.stock_total_insumo < s.minimo).length}
+          link="/config-stock"
+        />
+        <KpiCard
+          title="Solicitudes pendientes"
+          value={solicitudesPendientes}
+          link="/solicitudes"
+        />
+        <KpiCard
+          title="Últimos movimientos"
+          value={movimientos.length}
+          link="/movimientos"
+        />
       </div>
-
-      <div className="dashboard-section">
-        <h2>Resumen</h2>
-        <p>
-          Bienvenido {user?.nombreCompleto}, aquí tienes un resumen de tus métricas
-          institucionales.
-        </p>
-      </div>
+      <RecentMovements movimientos={movimientos} />
     </div>
   );
-}
+};
+
+export default DashboardPage;
