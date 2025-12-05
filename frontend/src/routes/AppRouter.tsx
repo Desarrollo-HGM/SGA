@@ -1,59 +1,56 @@
-// src/routes/AppRouter.tsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "../pages/Login";
-import DashboardLayout from "../components/DashboardLayout";
-import Inventario from "../pages/Inventario";
-import Solicitudes from "../pages/Solicitudes";
-import Movimientos from "../pages/Movimientos";
-import Reportes from "../pages/Reportes";
-import ProtectedRoute from "./PrivateRoute";
+// src/router/AppRouter.tsx
+import { Routes, Route, Navigate } from "react-router-dom";
+import DashboardLayout from "../layouts/DashboardLayout";
+import DashboardPage from "../pages/Dashboard";
+import SolicitudesPage from "../pages/Solicitudes";
+import MovimientosPage from "../pages/Movimientos";
+import LoginPage from "../pages/Login";
+import { useAuth } from "../hooks/useAuth";
+import type { JSX } from "react";
+
+function PrivateRoute({ children }: { children: JSX.Element }) {
+  const { user } = useAuth();
+  return user ? children : <Navigate to="/login" />;
+}
 
 export default function AppRouter() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["Administrador", "Usuario"]}>
-              <DashboardLayout>
-                <Inventario />
-              </DashboardLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/solicitudes"
-          element={
-            <ProtectedRoute allowedRoles={["Administrador", "Usuario"]}>
-              <DashboardLayout>
-                <Solicitudes />
-              </DashboardLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/movimientos"
-          element={
-            <ProtectedRoute allowedRoles={["Administrador"]}>
-              <DashboardLayout>
-                <Movimientos />
-              </DashboardLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/reportes"
-          element={
-            <ProtectedRoute allowedRoles={["Administrador"]}>
-              <DashboardLayout>
-                <Reportes />
-              </DashboardLayout>
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route
+        path="/"
+        element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <DashboardPage />
+            </DashboardLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/solicitudes"
+        element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <SolicitudesPage />
+            </DashboardLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/movimientos"
+        element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <MovimientosPage />
+            </DashboardLayout>
+          </PrivateRoute>
+        }
+      />
+
+      {/* Redirección por defecto */}
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   );
 }

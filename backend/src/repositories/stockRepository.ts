@@ -14,20 +14,28 @@ export const stockRepository = {
           "i.id_insumos",
           "i.descripcion_corta as nombre_insumo",
           "a.id_almacen",
-          "a.nombre_almacen"
+          "a.nombre_almacen",
+          "cs.minimo",
+          "cs.maximo"
         )
         .sum("l.cantidad_actual as stock_total_insumo")
         .from("lotes as l")
         .join("cat_insumos as i", "l.id_insumo", "i.id_insumos")
         .join("subalmacenes as sa", "l.id_subalmacen", "sa.id_subalmacen")
         .join("almacenes as a", "i.id_almacen", "a.id_almacen")
+        .leftJoin("config_stock as cs", function () {
+          this.on("cs.id_insumo", "=", "i.id_insumos")
+              .andOn("cs.id_subalmacen", "=", "sa.id_subalmacen");
+        })
         .groupBy(
           "sa.id_subalmacen",
           "sa.nombre",
           "i.id_insumos",
           "i.descripcion_corta",
           "a.id_almacen",
-          "a.nombre_almacen"
+          "a.nombre_almacen",
+          "cs.minimo",
+          "cs.maximo"
         )
         .orderBy(["sa.id_subalmacen", "a.id_almacen", "i.id_insumos"]);
 
@@ -39,3 +47,4 @@ export const stockRepository = {
     }
   }
 };
+

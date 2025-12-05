@@ -20,8 +20,8 @@ export default function Sidebar() {
   const filteredMenu = menuItems.filter(item => item.roles.includes(user.role));
 
 const handleLogout = () => {
-    logout(); // limpia token y usuario
-    navigate("/login"); // redirige al login
+    logout(); 
+    navigate("/login"); 
   };
 
   return (

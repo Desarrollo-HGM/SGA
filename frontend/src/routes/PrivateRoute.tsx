@@ -5,7 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 import type { User } from "../types/User";
 
 interface ProtectedRouteProps {
-  children: ReactElement; // 👈 más estricto que ReactNode
+  children: ReactElement;                                   
   allowedRoles: User["role"][];
 }
 

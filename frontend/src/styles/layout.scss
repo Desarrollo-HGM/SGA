@@ -4,6 +4,19 @@
   width: 100%;
 }
 
+.app-sidebar {
+  width: 240px; // ancho fijo del sidebar
+  flex-shrink: 0;
+  background: var(--navbar-dark-primary, #004080);
+}
+
+.app-main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+
 #nav-bar {
   background: var(--navbar-dark-primary);
   transition: width 0.3s ease;
@@ -19,8 +32,8 @@
 }
 
 .app-content {
-  flex: 1;
-  padding: 1.5rem;
+  flex-grow: 1;
+  padding: 2rem;
   overflow-y: auto;
   background: #f5f6fa;
 }

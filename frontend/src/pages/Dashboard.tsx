@@ -1,10 +1,11 @@
+//pages/Dashboard.tsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import api from "../config/api"; // tu servicio axios
 import KpiCard from "../components/KpiCard";
 import RecentMovements from "../components/RecentMovements";
-
-const DashboardPage: React.FC = () => {
+import StockTable from "../components/StockTable"; 
+const DashboardPage: React.FC =  () => {
   const { user } = useAuth();
   const [stock, setStock] = useState<any[]>([]);
   const [solicitudesPendientes, setSolicitudesPendientes] = useState<number>(0);
@@ -28,29 +29,32 @@ const DashboardPage: React.FC = () => {
     fetchData();
   }, []);
 
-  return (
-    <div className="dashboard-page">
-      <h1>Bienvenido, {user?.username}</h1>
-      <div className="dashboard-kpis">
-        <KpiCard
-          title="Stock bajo mínimo"
-          value={stock.filter(s => s.stock_total_insumo < s.minimo).length}
-          link="/config-stock"
-        />
-        <KpiCard
-          title="Solicitudes pendientes"
-          value={solicitudesPendientes}
-          link="/solicitudes"
-        />
-        <KpiCard
-          title="Últimos movimientos"
-          value={movimientos.length}
-          link="/movimientos"
-        />
-      </div>
-      <RecentMovements movimientos={movimientos} />
+  // KPI: contar insumos bajo mínimo
+  const stockBajoMinimo = stock.filter(
+    (s) => s.stock_total_insumo < s.minimo
+  ).length;
+
+  // KPI: últimos movimientos (ya lo tienes en la tabla)
+  const totalMovimientos = movimientos.length;
+
+ // src/pages/Dashboard.tsx
+return (
+  <div className="dashboard-page">
+    <h1>Bienvenido, {user?.username}</h1>
+
+    <div className="dashboard-kpis">
+      <KpiCard title="Insumos bajo mínimo" value={stockBajoMinimo} link={""} />
+      <KpiCard title="Solicitudes pendientes" value={solicitudesPendientes} link={""} />
+      <KpiCard title="Últimos movimientos" value={totalMovimientos} link={""} />
     </div>
-  );
+
+    <RecentMovements movimientos={movimientos} />
+
+    <h2>Stock Consolidado</h2>
+    <StockTable />
+  </div>
+);
+
 };
 
 export default DashboardPage;
