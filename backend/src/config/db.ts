@@ -1,4 +1,5 @@
 // src/config/db.ts
+// Prueba 190126
 import knex from "knex";
 import dotenv from "dotenv";
 import { logger } from "./logger.js"; // ✅ usamos Winston
