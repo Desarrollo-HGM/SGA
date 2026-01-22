@@ -1,8 +1,11 @@
-// src/components/Header.tsx
+
 import React from "react";
 import { useAuth } from "../hooks/useAuth";
-import { useAuth as useAuthHook } from "../hooks/useAuth"; // si ya tienes logout en el hook
+import { useAuth as useAuthHook } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+
+
+
 
 const Header: React.FC = () => {
   const { user } = useAuth();
@@ -26,8 +29,25 @@ const Header: React.FC = () => {
         <button className="logout-btn" onClick={handleLogout}>
           <i className="fas fa-sign-out-alt"></i> Salir
         </button>
+
+
+
+        <div>
+    </div>
+
       </div>
     </header>
+    
+
+
+
+
+
+
+
+
+
+
   );
 };
 
