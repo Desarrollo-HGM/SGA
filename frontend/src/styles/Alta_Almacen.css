@@ -1,0 +1,60 @@
+:root {
+  --color-primary: #003366;   /* Azul institucional */
+  --color-secondary: #0055a5; /* Azul más claro */
+  --color-background: #f5f7fa;
+}
+
+.alta-almacen-container {
+  padding: 1.5rem;
+  background-color: var(--color-background);
+}
+
+.header-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+}
+
+.open-modal-btn {
+  background-color: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.open-modal-btn:hover {
+  background-color: var(--color-secondary);
+}
+
+.modal-almacen {
+  background-color: #fff;
+}
+
+.kpi-grid {
+  margin-bottom: 2rem;
+}
+
+.kpi-card {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #ccd6e0;
+  text-align: center;
+}
+
+.kpi-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--color-secondary);
+}
+
+.tabla-section {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}

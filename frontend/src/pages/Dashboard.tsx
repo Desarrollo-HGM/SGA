@@ -1,27 +1,4 @@
-
-import React from "react";
-import { AreaChart  } from '@mantine/charts';
-import { data } from '../js/data';
-
-const DashboardPage: React.FC = () => {
-
- 
-
-  return (
-    <AreaChart
-      h={300}
-      data={data}
-      dataKey="date"
-      series={[
-        { name: 'Apples', color: 'indigo.6' },
-        { name: 'Oranges', color: 'blue.6' },
-        { name: 'Tomatoes', color: 'teal.6' },
-      ]}
-      curveType="linear"
-    />
-
-      
-  );
-};
-
-export default DashboardPage;
+// src/pages/Inventario.tsx
+export default function Inventario() {
+  return <h1>📦 Dashboard</h1>;
+}

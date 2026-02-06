@@ -45,11 +45,21 @@ type NavItem = {
 
 
 const mockdata: NavItem[]  = [
+
+
+{
+    icon: IconCode,
+    title: 'Solicitudes de Sub Almacén',
+    description: 'Visualiza y gestiona las solicitudes',
+     link: '/view_solicitudes_almacen'
+
+  },
+
   {
     icon: IconCode,
-    title: 'Nueva Solicitud',
-    description: 'Genera nueva solicitud al almacén',
-     link: '/Solicitudes'
+    title: 'Nuevo Subalmacen',
+    description: 'Alta y gestión de subalmacenes',
+     link: '/Alta_Almacenes'
 
   },
   {
@@ -62,7 +72,7 @@ const mockdata: NavItem[]  = [
     icon: IconBook,
     title: 'Stock en tiempo real',
     description: 'Insumos existentes en el almacen',
-     link: '/Inventario',
+     link: '/Stock_Almacen',
   },
   {
     icon: IconFingerprint,
@@ -122,7 +132,7 @@ const links = mockdata.map((item) => (
 
 
   return (
-    <Box pb={120}>
+    <Box pb={20}>
       <header className={classes.header}   style={{ boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}
 >
         <Group justify="left" h="100%">
@@ -132,7 +142,7 @@ const links = mockdata.map((item) => (
           
 
 <Link to="/Dashboard" className={classes.link}>
-  Dashboard
+  Dashboard Almacen Central
 </Link>
 
 
@@ -167,7 +177,7 @@ const links = mockdata.map((item) => (
            
           </Group>
  
-          <Group visibleFrom="sm" >
+          <Group visibleFrom="sm">
             {user ? (
               <>
                 <Text size="sm" fw={500}>

@@ -1,0 +1,39 @@
+/* Buscador */
+.search-bar {
+  max-width: 300px;
+  margin-bottom: 12px;
+}
+
+/* Tabla con scroll infinito */
+.table-container {
+  max-height: 400px; /* Ajusta según necesidad */
+  overflow-y: auto;
+  margin-top: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+/* Head fijo con azul institucional */
+.table-head {
+  position: sticky;
+  top: 0;
+  background-color: #003366; /* Azul fuerte institucional */
+  color: #ffffff;
+  z-index: 2;
+}
+
+.table-head th {
+  padding: 8px;
+  text-align: left;
+  font-weight: 600;
+}
+
+:root {
+  --color-primary: #003366;   /* Azul institucional */
+  --color-secondary: #0055a5; /* Azul más claro */
+  --color-background: #f5f7fa;
+}
+.table-row:hover {
+  background-color: #e0e7ff; /* Azul muy claro al hover */
+  transition: background-color 0.2s ease-in-out;
+}

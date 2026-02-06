@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 
 import DashboardPage from "../pages/Dashboard";
-import SolicitudesPage from "../pages/Solicitudes";
+import Alta_AlmacenesPage from "../pages/Alta_Almacenes";
 import MovimientosPage from "../pages/Movimientos";
 import LoginPage from "../pages/Login";
 import ReportesPage from "../pages/Reportes";
@@ -11,11 +11,15 @@ import Lotes_CaducidadesPage from "../pages/Lotes_Caducidades";
 import ReabastecimientoPage from "../pages/Reabastecimiento";
 import InventarioPage from "../pages/Inventario";
 
+import Solicitudes_AlmacenPage from "../pages/View_Solicitudes_Almacen";
+import Stock_AlmacenPage from "../pages/Stock_Almacen";
+
 
 
 
 import { useAuth } from "../hooks/useAuth";
 import type { JSX } from "react";
+import View_Solicitudes_Almacen from "../pages/View_Solicitudes_Almacen";
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
   const { user } = useAuth();
@@ -37,16 +41,43 @@ export default function AppRouter() {
           </PrivateRoute>
         }
       />
-      <Route
-        path="/solicitudes"
+
+ <Route
+        path="/view_solicitudes_almacen"
         element={
           <PrivateRoute>
             <DashboardLayout>
-              <SolicitudesPage />
+              <View_Solicitudes_Almacen />
             </DashboardLayout>
           </PrivateRoute>
         }
       />
+
+
+ <Route
+        path="/Stock_Almacen"
+        element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <Stock_AlmacenPage />
+            </DashboardLayout>
+          </PrivateRoute>
+        }
+      />
+
+
+      <Route
+        path="/alta_almacenes"
+        element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <Alta_AlmacenesPage />
+            </DashboardLayout>
+          </PrivateRoute>
+        }
+      />
+
+
       <Route
         path="/movimientos"
         element={

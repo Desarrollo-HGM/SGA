@@ -1,0 +1,85 @@
+/* Paleta institucional para Stock */
+:root {
+  --color-abasto: #2e8b57;    /* verde institucional */
+  --color-desabasto: #cc0000; /* rojo institucional */
+  --color-light: #e6f0ff;
+  --color-bg: #f8f9fc;
+  --color-text: #1a1a1a;
+}
+
+/* Layout general */
+body {
+  font-family: "Inter", sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+}
+
+/* Header institucional */
+.app-header {
+  background-color: #003d7a; /* azul fuerte */
+  color: white;
+  padding: 1rem;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+/* KPI Cards generales */
+.kpi-card {
+  background-color: white;
+  border: 1px solid var(--color-light);
+  padding: 1rem;
+  margin: 0.5rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  border-radius: 6px;
+  min-width: 220px;
+  text-align: center;
+}
+
+/* KPI específicas */
+.kpi-abasto {
+  border-left: 6px solid var(--color-abasto);
+  color: var(--color-abasto);
+}
+
+.kpi-desabasto {
+  border-left: 6px solid var(--color-desabasto);
+  color: var(--color-desabasto);
+}
+
+/* Botones institucionales */
+.btn-action {
+  background-color: #3385ff; /* azul vivo */
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-action:hover {
+  background-color: #0052a3; /* azul medio */
+}
+
+/* Tablas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background-color: white;
+}
+
+table th {
+  background-color: #003d7a; /* azul fuerte */
+  color: white;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #ddd;
+}
