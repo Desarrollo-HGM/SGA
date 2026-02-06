@@ -10,8 +10,6 @@ import ReportesPage from "../pages/Reportes";
 import Lotes_CaducidadesPage from "../pages/Lotes_Caducidades";
 import ReabastecimientoPage from "../pages/Reabastecimiento";
 import InventarioPage from "../pages/Inventario";
-
-import Solicitudes_AlmacenPage from "../pages/View_Solicitudes_Almacen";
 import Stock_AlmacenPage from "../pages/Stock_Almacen";
 
 
