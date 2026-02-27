@@ -1,114 +1,360 @@
 import { useState } from "react";
 import {
-  AppShell,
-  Card,
-  Text,
   Table,
-  Badge,
+  Checkbox,
   Button,
   Modal,
-  SimpleGrid,
+  TextInput,
+  Group,
+  NumberInput,
+  Text
 } from "@mantine/core";
-import "./dashboard.css";
+import { IconPrinter, IconCheck } from "@tabler/icons-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import QRCode from "qrcode";
+import logo from "../../assets/hgm.png";
+import {  TimeInput } from "@mantine/dates";
+interface Insumo {
+  id: number;
+  insumo: string;
+  descripcion: string;
+  clave: string;
+  unidad: string;
+  maximo: number;
+  minimo: number;
+  existencias: number;
 
-const stockMock = [
-  { subalmacen: "A", servicio: "Mantenimiento", cantidad: 1200, estado: "Abasto" },
-  { subalmacen: "B", servicio: "Producción", cantidad: 80, estado: "Desabasto" },
-  { subalmacen: "C", servicio: "Calidad", cantidad: 300, estado: "Abasto" },
-  { subalmacen: "D", servicio: "Compras", cantidad: 50, estado: "Desabasto" },
+}
+
+interface FormData {
+  quienSurte: string;
+  fecha: string;
+  hora: string;
+}
+
+const insumosMock: Insumo[] = [
+  {
+    id: 1,
+    insumo: "Guantes",
+    descripcion: "Guantes de látex",
+    clave: "GLX-001",
+    unidad: "Caja",
+    maximo: 100,
+    minimo: 20,
+    existencias: 50,
+  },
+  {
+    id: 2,
+    insumo: "Cubrebocas",
+    descripcion: "Cubrebocas triple capa",
+    clave: "CBK-002",
+    unidad: "Paquete",
+    maximo: 200,
+    minimo: 50,
+    existencias: 120,
+  },
 ];
 
-export default function StockDashboard() {
-  const [opened, setOpened] = useState(false);
-  const [filter, setFilter] = useState<string | null>(null);
+export default function TablaSurtido() {
+  const [seleccionados, setSeleccionados] = useState<number[]>([]);
+  const [cantidades, setCantidades] = useState<Record<number, number>>({});
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const totalAbasto = stockMock.filter(s => s.estado === "Abasto").length;
-  const totalDesabasto = stockMock.filter(s => s.estado === "Desabasto").length;
+  const [formData, setFormData] = useState<FormData>({
+    quienSurte: "",
+   
+    fecha: "",
+    hora: "",
+  });
 
-  const filteredStock = filter
-    ? stockMock.filter(s => s.estado === filter)
-    : stockMock;
+  /* ================= FORMULA AUTOMATICA ================= */
+
+  const diferenciaASurtir = (item: Insumo) => {
+    const diff = item.maximo - item.existencias;
+    return diff > 0 ? diff : 0;
+  };
+
+  /* ================= SELECCION ================= */
+
+  const toggleSeleccion = (id: number) => {
+    const item = insumosMock.find((i) => i.id === id);
+    if (!item) return;
+
+    if (seleccionados.includes(id)) {
+      setSeleccionados(seleccionados.filter((x) => x !== id));
+      const nuevas = { ...cantidades };
+      delete nuevas[id];
+      setCantidades(nuevas);
+    } else {
+      setSeleccionados([...seleccionados, id]);
+      setCantidades({
+        ...cantidades,
+        [id]: diferenciaASurtir(item),
+      });
+    }
+  };
+
+  const seleccionarTodos = () => {
+    if (seleccionados.length === insumosMock.length) {
+      setSeleccionados([]);
+      setCantidades({});
+    } else {
+      const todos = insumosMock.map((i) => i.id);
+      const nuevas: Record<number, number> = {};
+      insumosMock.forEach((item) => {
+        nuevas[item.id] = diferenciaASurtir(item);
+      });
+      setSeleccionados(todos);
+      setCantidades(nuevas);
+    }
+  };
+
+  const totalASurtir = () =>
+    Object.values(cantidades).reduce((acc, val) => acc + (val || 0), 0);
+
+  /* ================= HASH ================= */
+
+  const generarHash = async (data: string) => {
+    const encoder = new TextEncoder();
+    const encoded = encoder.encode(data);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
+    return Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  };
+
+  /* ================= PDF ================= */
+
+  const handleGuardar = async () => {
+    const detalle = seleccionados
+      .map((id) => {
+        const item = insumosMock.find((i) => i.id === id)!;
+        return `${item.insumo}|${item.clave}|${item.maximo}|${item.minimo}|${item.existencias}|${cantidades[id]}`;
+      })
+      .join(";");
+
+    const cadena = `
+Quien surte: ${formData.quienSurte}
+
+Fecha: ${formData.fecha}
+Hora: ${formData.hora}
+Detalle: ${detalle}
+`;
+
+    const hash = await generarHash(cadena);
+    const qrDataUrl = await QRCode.toDataURL(`${cadena}\nHASH:${hash}`);
+
+    const doc = new jsPDF();
+
+    doc.setFillColor(0, 51, 102);
+    doc.rect(0, 0, 210, 30, "F");
+    doc.addImage(logo, "PNG", 10, 5, 25, 20);
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.text("Institución - Acuse de Surtido", 45, 20);
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.text(`Quién surte: ${formData.quienSurte}`, 20, 45);
+   
+    doc.text(`Fecha: ${formData.fecha}`, 20, 65);
+    doc.text(`Hora: ${formData.hora}`, 20, 75);
+
+    autoTable(doc, {
+      startY: 85,
+      head: [[
+        "#",
+        "Insumo",
+        "Clave",
+        "Máximo",
+        "Mínimo",
+        "Existencias",
+        "Cantidad a surtir",
+        "Cantidad surtida",
+      ]],
+      body: seleccionados.map((id, index) => {
+        const item = insumosMock.find((i) => i.id === id)!;
+        return [
+          index + 1,
+          item.insumo,
+          item.clave,
+          item.maximo,
+          item.minimo,
+          item.existencias,
+          diferenciaASurtir(item),
+          cantidades[id],
+        ];
+      }),
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [0, 51, 102], textColor: 255 },
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY;
+
+    doc.text(`Total a surtir: ${totalASurtir()}`, 40, finalY + 10);
+
+    doc.addImage(qrDataUrl, "PNG", 150, finalY + 20, 40, 40);
+
+    doc.setFontSize(8);
+    doc.text("Cadena de autenticidad del documento:", 20, finalY + 150);
+    doc.text(hash, 20, finalY + 155, { maxWidth: 120 });
+
+    
+   // Firmas centradas
+doc.setFontSize(12);
+
+// Firma de quien entrega (automática con nombre)
+doc.text("Firma de quien surte:", 55, finalY + 100, { align: "center" });
+doc.text("__________________", 55, finalY + 110, { align: "center" });
+
+
+// Firma de quien recibe (manual)
+doc.text("Firma de quien recibe:", 155, finalY + 100, { align: "center" });
+doc.text("__________________", 155, finalY + 110, { align: "center" });
+
+
+
+
+
+
+
+    doc.save("acuse_surtido.pdf");
+    setModalOpen(false);
+  };
 
   return (
-    <AppShell header={{ height: 60 }}>
-     
+    <>
+      <Group justify="flex-end" mb="md">
+        <Button leftSection={<IconCheck size={18} />} onClick={() => setModalOpen(true)}>
+          Surtir seleccionados
+        </Button>
+      </Group>
 
-      <AppShell.Main style={{ paddingLeft: 0, paddingRight: 0 }}>
-        {/* KPI Cards en grid */}
-        <SimpleGrid cols={2} spacing="md" mt="md">
-          <Card className="kpi-card kpi-abasto">
-            <Text>Subalmacenes con Abasto: {totalAbasto}</Text>
-            <Button size="xs" className="btn-action" onClick={() => { setFilter("Abasto"); setOpened(true); }}>
-              Ver detalle
-            </Button>
-          </Card>
-          <Card className="kpi-card kpi-desabasto">
-            <Text>Subalmacenes con Desabasto: {totalDesabasto}</Text>
-            <Button size="xs" className="btn-action" onClick={() => { setFilter("Desabasto"); setOpened(true); }}>
-              Ver detalle
-            </Button>
-          </Card>
-        </SimpleGrid>
-
-        {/* Tabla de Stock */}
-        <Text mt="xl" fw={600}>Listado de Stock</Text>
-        <Table striped highlightOnHover>
-          <thead>
-            <tr>
-              <th>Subalmacén</th>
-              <th>Servicio</th>
-              <th>Cantidad</th>
-              <th>Estado</th>
-              <th>Acción</th>
+      <Table striped withTableBorder 
+ > 
+        <thead className="table-head"  >
+          <tr>
+            <th>
+              <Checkbox
+                checked={seleccionados.length === insumosMock.length}
+                onChange={seleccionarTodos}
+              />
+            </th>
+            <th >Insumo</th>
+            <th>Clave</th>
+            <th>Máximo</th>
+            <th>Mínimo</th>
+            <th>Existencias</th>
+            <th>Diferencia</th>
+            <th>Cantidad a surtir</th>
+          </tr>
+        </thead>
+        <tbody >
+          {insumosMock.map((item) => (
+            <tr key={item.id}>
+              <td>
+                <Checkbox
+                  checked={seleccionados.includes(item.id)}
+                  onChange={() => toggleSeleccion(item.id)}
+                />
+              </td>
+              <td>{item.insumo}</td>
+              <td>{item.clave}</td>
+              <td>{item.maximo}</td>
+              <td>{item.minimo}</td>
+              <td>{item.existencias}</td>
+              <td>{diferenciaASurtir(item)}</td>
+              <td>
+                {seleccionados.includes(item.id) && (
+                  <NumberInput
+                    value={cantidades[item.id]}
+                    min={0}
+                    max={item.maximo}
+                    onChange={(value) =>
+                      setCantidades({
+                        ...cantidades,
+                        [item.id]: Number(value) || 0,
+                      })
+                    }
+                  />
+                )}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {stockMock.map((s, i) => (
-              <tr key={i}>
-                <td>{s.subalmacen}</td>
-                <td>{s.servicio}</td>
-                <td>{s.cantidad}</td>
-                <td>
-                  <Badge color={s.estado === "Abasto" ? "green" : "red"}>
-                    {s.estado}
-                  </Badge>
-                </td>
-                <td>
-                  {s.estado === "Desabasto" && (
-                    <Button size="xs" color="red" className="btn-action">
-                      Acción requerida
-                    </Button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+          ))}
+        </tbody>
+      </Table>
+<Modal
+  opened={modalOpen}
+  onClose={() => setModalOpen(false)}
+  centered
+  size="lg"
+  title="Confirmación de Surtido"
+>
+  {/* Quién surte */}
+  <TextInput
+    label="Quién surte"
+    value={formData.quienSurte}
+    onChange={(e) =>
+      setFormData({ ...formData, quienSurte: e.currentTarget.value })
+    }
+    required
+  />
 
-        {/* Modal de detalle filtrado */}
-        <Modal opened={opened} onClose={() => setOpened(false)} title="Detalle de Stock">
-          <Table striped highlightOnHover>
-            <thead>
-              <tr>
-                <th>Subalmacén</th>
-                <th>Servicio</th>
-                <th>Cantidad</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredStock.map((s, i) => (
-                <tr key={i}>
-                  <td>{s.subalmacen}</td>
-                  <td>{s.servicio}</td>
-                  <td>{s.cantidad}</td>
-                  <td>{s.estado}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Modal>
-      </AppShell.Main>
-    </AppShell>
+ {/* Fecha */}
+<TextInput
+  label="Fecha"
+  type="date"
+  value={formData.fecha ?? ""}
+  onChange={(e) =>
+    setFormData({ ...formData, fecha: e.currentTarget.value })
+  }
+  required
+/>
+
+{/* Hora */}
+<TimeInput
+  label="Hora"
+  value={formData.hora}
+  onChange={(event) =>
+    setFormData({ ...formData, hora: event.currentTarget.value })
+  }
+  mt="sm"
+  required
+/>
+
+  {/* Resumen */}
+  <div style={{ marginTop: 20 }}>
+    <Text fw={600}>Resumen de surtido:</Text>
+
+    <ul>
+      {seleccionados.map((id) => {
+        const item = insumosMock.find((i) => i.id === id)!;
+        return (
+          <li key={id}>
+            {item.insumo} — Diferencia: {diferenciaASurtir(item)} — A surtir: {cantidades[id]}
+          </li>
+        );
+      })}
+    </ul>
+
+    <Text fw={600}>Total: {totalASurtir()}</Text>
+  </div>
+
+  <Group justify="flex-end" mt="md">
+    <Button
+      leftSection={<IconPrinter size={18} />}
+      onClick={handleGuardar}
+      disabled={
+        seleccionados.length === 0 ||
+        !formData.quienSurte.trim()
+      }
+    >
+      Firmar y Generar PDF
+    </Button>
+  </Group>
+</Modal>
+    </>
   );
 }
