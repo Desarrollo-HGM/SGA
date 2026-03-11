@@ -1,92 +1,166 @@
 // src/pages/Login.tsx
+
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
+import {
+  Container,
+  Paper,
+  TextInput,
+  PasswordInput,
+  Button,
+  Title,
+  Alert,
+  Stack,
+  Image
+} from "@mantine/core";
+
+import {
+  IconUser,
+  IconLock,
+  IconAlertCircle,
+  IconCheck
+} from "@tabler/icons-react";
 
 export default function Login() {
+
   const { login, user, token } = useAuth();
   const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    const { user, token } = await login(username, password);
-    console.log("✅ Login correcto:", { user, token });
-    navigate("/dashboard");
-  } catch (err: any) {
-    console.error("❌ Error en login:", err);
+  const [loading, setLoading] = useState(false);
 
-    // Si es Axios, puedes ver la respuesta del servidor
-    if (err.response) {
-      console.error("📡 Respuesta del servidor:", err.response.data);
-      setError(err.response.data.message || "Credenciales inválidas");
-    } else if (err.request) {
-      console.error("📡 No hubo respuesta del servidor:", err.request);
-      setError("No se pudo conectar al servidor");
-    } else {
-      console.error("📡 Error inesperado:", err.message);
-      setError("Error inesperado en login");
+  const handleSubmit = async (e: React.FormEvent) => {
+
+    e.preventDefault();
+
+    setError("");
+    setSuccess("");
+
+    if (!username.trim()) {
+      setError("Ingrese su usuario");
+      return;
     }
-  }
-};
 
+    if (!password.trim()) {
+      setError("Ingrese su contraseña");
+      return;
+    }
 
-useEffect(() => {
-  if (user && token) {
-    navigate("/dashboard");
-  }
-}, [user, token, navigate]);
+    try {
+
+      setLoading(true);
+
+      const { user, token } = await login(username, password);
+
+      console.log("✅ Login correcto:", { user, token });
+
+      setSuccess("Acceso correcto, redirigiendo...");
+
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
+
+    } catch (err: any) {
+
+      console.error("❌ Error en login:", err);
+
+      if (err.response) {
+        setError(err.response.data.message || "Credenciales inválidas");
+      } else if (err.request) {
+        setError("No se pudo conectar al servidor");
+      } else {
+        setError("Error inesperado en login");
+      }
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+
+    if (user && token) {
+      navigate("/dashboard");
+    }
+
+  }, [user, token, navigate]);
 
   return (
-    <div className="login-container">
-  <div className="login-card">
-    <img className="logo mb-3" src="/src/assets/hgm.png" alt="Logo HGM"  />
-    <h4 className="mt-3 mb-4 fw-bold">Sistema de Gestión de Almacén</h4>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3 text-start">
-            <label className="form-label">Usuario</label>
-            <div className="input-group">
-              <span className="input-group-text">
-                <i className="bi bi-person-fill"></i>
-              </span>
-              <input
-                type="text"
-                className="form-control"
+    <Container size={420} my={120}>
+
+      <Paper shadow="xl" radius="md" p="xl" withBorder>
+
+        <Stack>
+
+          <Image
+            src="/src/assets/hgm.png"
+            alt="Logo HGM"
+            height={110}
+            fit="contain"
+          />
+
+         
+          {error && (
+            <Alert icon={<IconAlertCircle size={18} />} color="red">
+              {error}
+            </Alert>
+          )}
+
+          {success && (
+            <Alert icon={<IconCheck size={18} />} color="green">
+              {success}
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit}>
+
+            <Stack>
+
+              <TextInput
+                label="Usuario"
+                placeholder="Ingrese su usuario"
+                leftSection={<IconUser size={16} />}
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => setUsername(e.currentTarget.value)}
                 required
               />
-            </div>
-          </div>
 
-          <div className="mb-3 text-start">
-            <label className="form-label">Contraseña</label>
-            <div className="input-group">
-              <span className="input-group-text">
-                <i className="bi bi-lock-fill"></i>
-              </span>
-              <input
-                type="password"
-                className="form-control"
+              <PasswordInput
+                label="Contraseña"
+                placeholder="Ingrese su contraseña"
+                leftSection={<IconLock size={16} />}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.currentTarget.value)}
                 required
               />
-            </div>
-          </div>
 
-          {error && <div className="text-danger mb-3">{error}</div>}
+              <Button
+                type="submit"
+                fullWidth
+                loading={loading}
+                size="md"
+                color="blue"
+              >
+                Ingresar al sistema
+              </Button>
 
-          <button type="submit" className="btn btn-primary w-100">
-            CONTINUAR <i className="bi bi-arrow-right ms-2"></i>
-          </button>
-        </form>
-      </div>
-    </div>
+            </Stack>
+
+          </form>
+
+        </Stack>
+
+      </Paper>
+
+    </Container>
+
   );
 }

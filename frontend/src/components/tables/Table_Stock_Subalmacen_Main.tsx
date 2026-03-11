@@ -85,7 +85,7 @@ export default function SolicitudesDashboard() {
               <tr>
                 <th>Día</th>
                 <th>Servicio</th>
-                <th style={{ textAlign: "center" }}>Subalmacén</th>
+                <th style={{ textAlign: "center" }}>Sub Almacén</th>
                 <th style={{ textAlign: "center" }}>Acción</th>
               </tr>
             </thead>
@@ -131,7 +131,7 @@ export default function SolicitudesDashboard() {
             <div style={{ padding: "20px" }}>
               <Text fw={500}>Día: {selectedSolicitud.dia}</Text>
               <Text fw={500}>Servicio: {selectedSolicitud.servicio}</Text>
-              <Text fw={500}>Subalmacén: {selectedSolicitud.subalmacen}</Text>
+              <Text fw={500}>Sub Almacén: {selectedSolicitud.subalmacen}</Text>
 
               <Button size="xs"
                       variant="light"

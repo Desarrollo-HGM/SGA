@@ -115,26 +115,31 @@ export default function TablaSurtido() {
 
   /* ================= HASH ================= */
 
-  const generarHash = async (data: string) => {
-    const encoder = new TextEncoder();
-    const encoded = encoder.encode(data);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
-    return Array.from(new Uint8Array(hashBuffer))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-  };
+// Hash manual (simple, no criptográfico)
+function generarHash(texto: string): string {
+  let hash = 0;
+  for (let i = 0; i < texto.length; i++) {
+    const char = texto.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= 0; // Convertir a 32 bits
+  }
+  // Convertir a hexadecimal
+  return Math.abs(hash).toString(16);
+}
+
+
+
 
   /* ================= PDF ================= */
+const handleGuardar = async () => {
+  const detalle = seleccionados
+    .map((id) => {
+      const item = insumosMock.find((i) => i.id === id)!;
+      return `${item.insumo}|${item.clave}|${item.maximo}|${item.minimo}|${item.existencias}|${cantidades[id]}`;
+    })
+    .join(";");
 
-  const handleGuardar = async () => {
-    const detalle = seleccionados
-      .map((id) => {
-        const item = insumosMock.find((i) => i.id === id)!;
-        return `${item.insumo}|${item.clave}|${item.maximo}|${item.minimo}|${item.existencias}|${cantidades[id]}`;
-      })
-      .join(";");
-
-    const cadena = `
+  const cadena = `
 Quien surte: ${formData.quienSurte}
 
 Fecha: ${formData.fecha}
@@ -142,87 +147,81 @@ Hora: ${formData.hora}
 Detalle: ${detalle}
 `;
 
-    const hash = await generarHash(cadena);
-    const qrDataUrl = await QRCode.toDataURL(`${cadena}\nHASH:${hash}`);
+  const hash = generarHash(cadena);
+  const qrDataUrl = await QRCode.toDataURL(`${cadena}\nHASH:${hash}`);
 
-    const doc = new jsPDF();
+  const doc = new jsPDF();
 
-    doc.setFillColor(0, 51, 102);
-    doc.rect(0, 0, 210, 30, "F");
-    doc.addImage(logo, "PNG", 10, 5, 25, 20);
+  // Encabezado institucional
+  doc.setFillColor(0, 51, 102);
+  doc.rect(0, 0, 210, 30, "F");
+  doc.addImage(logo, "PNG", 10, 5, 25, 20);
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.text("Institución - Acuse de Surtido", 45, 20);
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.text("Institución - Acuse de Surtido", 45, 20);
 
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
-    doc.text(`Quién surte: ${formData.quienSurte}`, 20, 45);
-   
-    doc.text(`Fecha: ${formData.fecha}`, 20, 65);
-    doc.text(`Hora: ${formData.hora}`, 20, 75);
+  // Datos principales
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(12);
+  doc.text(`Quién surte: ${formData.quienSurte}`, 20, 45);
+  doc.text(`Fecha: ${formData.fecha}`, 20, 65);
+  doc.text(`Hora: ${formData.hora}`, 20, 75);
 
-    autoTable(doc, {
-      startY: 85,
-      head: [[
-        "#",
-        "Insumo",
-        "Clave",
-        "Máximo",
-        "Mínimo",
-        "Existencias",
-        "Cantidad a surtir",
-        "Cantidad surtida",
-      ]],
-      body: seleccionados.map((id, index) => {
-        const item = insumosMock.find((i) => i.id === id)!;
-        return [
-          index + 1,
-          item.insumo,
-          item.clave,
-          item.maximo,
-          item.minimo,
-          item.existencias,
-          diferenciaASurtir(item),
-          cantidades[id],
-        ];
-      }),
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [0, 51, 102], textColor: 255 },
-    });
+  // Tabla de insumos
+  autoTable(doc, {
+    startY: 85,
+    head: [[
+      "#",
+      "Insumo",
+      "Clave",
+      "Máximo",
+      "Mínimo",
+      "Existencias",
+      "Cantidad a surtir",
+      "Cantidad surtida",
+    ]],
+    body: seleccionados.map((id, index) => {
+      const item = insumosMock.find((i) => i.id === id)!;
+      return [
+        index + 1,
+        item.insumo,
+        item.clave,
+        item.maximo,
+        item.minimo,
+        item.existencias,
+        diferenciaASurtir(item),
+        cantidades[id],
+      ];
+    }),
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [0, 51, 102], textColor: 255 },
+  });
 
-    const finalY = (doc as any).lastAutoTable.finalY;
+  const finalY = (doc as any).lastAutoTable.finalY;
 
-    doc.text(`Total a surtir: ${totalASurtir()}`, 40, finalY + 10);
+  // Totales y QR
+  doc.text(`Total a surtir: ${totalASurtir()}`, 40, finalY + 10);
+  doc.addImage(qrDataUrl, "PNG", 150, finalY + 20, 40, 40);
 
-    doc.addImage(qrDataUrl, "PNG", 150, finalY + 20, 40, 40);
+  // Hash de autenticidad
+  doc.setFontSize(8);
+  doc.text("Cadena de autenticidad del documento:", 20, finalY + 150);
+  doc.text(hash, 20, finalY + 155, { maxWidth: 120 });
 
-    doc.setFontSize(8);
-    doc.text("Cadena de autenticidad del documento:", 20, finalY + 150);
-    doc.text(hash, 20, finalY + 155, { maxWidth: 120 });
+  // Firmas
+  doc.setFontSize(12);
+  doc.text("Firma de quien surte:", 55, finalY + 100, { align: "center" });
+  doc.text("__________________", 55, finalY + 110, { align: "center" });
 
-    
-   // Firmas centradas
-doc.setFontSize(12);
+  doc.text("Firma de quien recibe:", 155, finalY + 100, { align: "center" });
+  doc.text("__________________", 155, finalY + 110, { align: "center" });
 
-// Firma de quien entrega (automática con nombre)
-doc.text("Firma de quien surte:", 55, finalY + 100, { align: "center" });
-doc.text("__________________", 55, finalY + 110, { align: "center" });
-
-
-// Firma de quien recibe (manual)
-doc.text("Firma de quien recibe:", 155, finalY + 100, { align: "center" });
-doc.text("__________________", 155, finalY + 110, { align: "center" });
-
-
-
-
+  // Guardar o mostrar PDF
+  doc.save("acuse_surtido.pdf");
+};
 
 
-
-    doc.save("acuse_surtido.pdf");
-    setModalOpen(false);
-  };
 
   return (
     <>

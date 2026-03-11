@@ -16,7 +16,7 @@ import stockRoutes from "./routes/stockRoutes.js";
 dotenv.config({ path: '.env.local' });
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
 app.use(cors({
   origin: process.env.CLIENT_URL, // ✅ origen permitido
@@ -52,6 +52,6 @@ app.use(
   stockRoutes
 );
 
-app.listen(PORT, () => {
-  logger.info(`[Server] Servidor backend escuchando en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+ logger.info(`[Server] Servidor backend escuchando en red en puerto ${PORT}`);
 });

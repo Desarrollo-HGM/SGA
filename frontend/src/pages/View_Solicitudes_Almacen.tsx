@@ -1,12 +1,61 @@
-
+import { useState } from 'react';
+import { Box, Modal, Button,Group, Title } from '@mantine/core';
+import Formulario_Solicitudes from "../components/forms/Formulario_Solicitudes";
 import View_solicitudes_almacen from "../components/tables/Table_Solicitudes";
-import Stock from "../components/tables/Table_Stock_Subalmacen_Main";
-import { Box, Title, Grid } from '@mantine/core';
+import '../styles/Alta_Almacen.css';
+import { IconX } from "@tabler/icons-react";
 
-export default function SeccionSolicitudes() {
+const SeccionSolicitudes = () => {
+  const [opened, setOpened] = useState(false);
+
   return (
-    <Box className="tabla-section">
-      <Title
+    <div className="alta-almacen-container">
+
+     
+
+      {/* Modal con formulario */}
+     <Modal
+  opened={opened}
+  onClose={() => setOpened(false)}
+  title="Solicitud de Surtido"
+  centered
+  size="lg"
+  overlayProps={{ opacity: 0.55, blur: 3 }}
+  closeOnClickOutside={false}
+  zIndex={3000}
+  styles={{
+    header: {
+      position: "sticky",
+      top: 0,
+      backgroundColor: "#003366", // azul institucional
+      color: "white",
+      fontWeight: "bold",
+      zIndex: 1,
+    },
+    title: { color: "white" },
+    body: { maxHeight: "70vh", overflowY: "auto" },
+  }}
+>
+  <Formulario_Solicitudes />
+
+  {/* Botón de cierre adicional */}
+  <Group mt="md" justify="flex-end">
+    <Button
+      variant="outline"
+      color="gray"
+      onClick={() => setOpened(false)}
+      leftSection={<IconX size={16} />}
+    >
+      Cerrar
+    </Button>
+  </Group>
+</Modal>
+
+ 
+     
+      {/* Tabla */}
+      <Box className="tabla-section">
+         <Title
         order={6}
         style={{
           fontWeight: 900,
@@ -18,23 +67,19 @@ export default function SeccionSolicitudes() {
       >
         Solicitudes
       </Title>
+         <div className="header-actions">
 
-      <Grid>
-        {/* Columna izquierda: solicitudes */}
-        <Grid.Col span={6}>
-          <Box mt={-50}>
-            <View_solicitudes_almacen />
-          </Box>
-        </Grid.Col>
 
-        {/* Columna derecha: almacenes */}
-        <Grid.Col span={6}>
-          <Box mt={-50}>
-            
-          <Stock />
-          </Box>
-        </Grid.Col>
-      </Grid>
-    </Box>
+
+          
+        <Button onClick={() => setOpened(true)} className="open-modal-btn">
+          + Nueva Solicitud
+        </Button>
+      </div>
+        <View_solicitudes_almacen />
+      </Box>
+    </div>
   );
-}
+};
+
+export default SeccionSolicitudes;

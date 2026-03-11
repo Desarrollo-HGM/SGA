@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Modal, Button,Group } from '@mantine/core';
+import { Box, Modal, Button,Group, Title } from '@mantine/core';
 import Formulario_Subalmacenes from "../components/forms/Formulario_Alta_Subalmacenes";
 import Tabla_Subalmacenes from "../components/tables/Table_Subalmacenes";
 import '../styles/Alta_Almacen.css';
@@ -10,7 +10,7 @@ const Alta_Almacen = () => {
 
   return (
     <div className="alta-almacen-container">
-      {/* Botón superior izquierdo */}
+
      
 
       {/* Modal con formulario */}
@@ -51,11 +51,27 @@ const Alta_Almacen = () => {
   </Group>
 </Modal>
 
-
+ 
      
       {/* Tabla */}
       <Box className="tabla-section">
+         <Title
+        order={6}
+        style={{
+          fontWeight: 900,
+          color: '#003366',
+          borderBottom: '1px solid #D1D5DB',
+          paddingBottom: 4,
+          marginBottom: 6,
+        }}
+      >
+        Solicitudes
+      </Title>
          <div className="header-actions">
+
+
+
+          
         <Button onClick={() => setOpened(true)} className="open-modal-btn">
           + Nuevo Subalmacén
         </Button>
