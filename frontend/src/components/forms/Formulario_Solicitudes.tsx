@@ -4,11 +4,10 @@ import {
   Select,
   NumberInput,
   Button,
-  Paper,
   Stack,
   Group,
   LoadingOverlay,
-  Title
+  Grid
 } from "@mantine/core";
 
 import { DateInput } from "@mantine/dates";
@@ -22,19 +21,25 @@ import {
   IconCategory,
   IconBuildingWarehouse,
   IconSend,
-  IconHospital
+  IconHospital,
+  IconBuilding
 } from "@tabler/icons-react";
 
 interface FormValues {
   fecha: Date | null;
   folio: string;
-  insumo: string;
+  insumo: string | null;
   cantidad: number;
   solicitante: string;
-  tipoSolicitud: string;
-  servicio: string;
-  subalmacen: string;
+  tipoSolicitud: string | null;
+  servicio: string | null;
+  subalmacen: string | null;
+  cc: string | null;
 }
+
+/* =====================
+CATALOGOS
+===================== */
 
 const catalogoInsumos = [
   { value: "guantes", label: "Guantes" },
@@ -42,6 +47,31 @@ const catalogoInsumos = [
   { value: "jeringa5", label: "Jeringa 5ml" },
   { value: "gasas", label: "Gasas" },
   { value: "alcohol", label: "Alcohol" }
+];
+
+const catalogoTipoSolicitud = [
+  { value: "ordinaria", label: "Ordinaria" },
+  { value: "urgente", label: "Urgente" },
+  { value: "extraordinaria", label: "Extraordinaria" }
+];
+
+const catalogoServicios = [
+  { value: "urgencias", label: "Urgencias" },
+  { value: "hospitalizacion", label: "Hospitalización" },
+  { value: "cirugia", label: "Cirugía" },
+  { value: "pediatria", label: "Pediatría" }
+];
+
+const catalogoSubalmacen = [
+  { value: "farmacia", label: "Farmacia" },
+  { value: "urgencias", label: "Subalmacén Urgencias" },
+  { value: "quirofano", label: "Quirófano" }
+];
+
+const catalogoCC = [
+  { value: "1001", label: "1001 - Dirección" },
+  { value: "1002", label: "1002 - Urgencias" },
+  { value: "1003", label: "1003 - Hospitalización" }
 ];
 
 export default function SolicitudForm() {
@@ -52,37 +82,24 @@ export default function SolicitudForm() {
   const [loading, setLoading] = useState(false);
 
   const form = useForm<FormValues>({
-    initialValues: {
-      fecha: new Date(),
-      folio: generarFolio(),
-      insumo: "",
-      cantidad: 1,
-      solicitante: "",
-      tipoSolicitud: "",
-      servicio: "",
-      subalmacen: ""
-    },
-
-    validate: {
-      fecha: (value) => (!value ? "Campo obligatorio" : null),
-      insumo: (value) => (!value ? "Seleccione un insumo" : null),
-      cantidad: (value) => (value <= 0 ? "Cantidad inválida" : null),
-      solicitante: (value) =>
-        value.length < 3 ? "Nombre inválido" : null,
-      tipoSolicitud: (value) =>
-        !value ? "Seleccione tipo de solicitud" : null,
-      servicio: (value) =>
-        value.length < 2 ? "Servicio requerido" : null,
-      subalmacen: (value) =>
-        value.length < 2 ? "Subalmacén requerido" : null
-    }
+   initialValues: {
+  fecha: new Date(),
+  folio: generarFolio(),
+  insumo: null,
+  cantidad: 1,
+  solicitante: "",
+  tipoSolicitud: null,
+  servicio: null,
+  subalmacen: null,
+  cc: null
+}
   });
 
   const handleSubmit = async (values: FormValues) => {
 
     setLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     console.log(values);
 
@@ -93,113 +110,121 @@ export default function SolicitudForm() {
 
   return (
 
-    <Paper shadow="md" p="xl" radius="md" maw={600} mx="auto" pos="relative">
 
-      <LoadingOverlay
-        visible={loading}
-        overlayProps={{ blur: 2 }}
-      />
 
-     
 
-      <form onSubmit={form.onSubmit(handleSubmit)}>
+    
+    <form onSubmit={form.onSubmit(handleSubmit)} style={{ position: "relative" }}>
 
-        <Stack>
+      <LoadingOverlay visible={loading} overlayProps={{ blur: 2 }} />
 
-          <DateInput
-            label="Fecha"
-            placeholder="Seleccione fecha"
-            leftSection={<IconCalendar size={16} />}
-            {...form.getInputProps("fecha")}
-            required
-          />
+      <Stack>
 
-          <TextInput
-            label="Folio"
-            leftSection={<IconHash size={16} />}
-            readOnly
-            {...form.getInputProps("folio")}
-          />
+        <Grid>
 
-          <Select
-            label="Insumo"
-            placeholder="Seleccione insumo"
-            leftSection={<IconPackage size={16} />}
-            data={catalogoInsumos}
-            searchable
-            {...form.getInputProps("insumo")}
-            required
-          />
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <DateInput
+              label="Fecha"
+              leftSection={<IconCalendar size={16} />}
+              {...form.getInputProps("fecha")}
+            />
+          </Grid.Col>
 
-          <NumberInput
-            label="Cantidad"
-            leftSection={<IconPackage size={16} />}
-            min={1}
-            {...form.getInputProps("cantidad")}
-            required
-          />
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <TextInput
+              label="Folio"
+              leftSection={<IconHash size={16} />}
+              readOnly
+              {...form.getInputProps("folio")}
+            />
+          </Grid.Col>
 
-          <TextInput
-            label="Quien solicita"
-            leftSection={<IconUser size={16} />}
-            placeholder="Nombre del solicitante"
-            {...form.getInputProps("solicitante")}
-            required
-          />
+          <Grid.Col span={{ base: 12, md: 6 }}>
+  <Select
+  label="Insumo"
+  placeholder="Seleccione insumo"
+  leftSection={<IconPackage size={16} />}
+  data={catalogoInsumos}
+  searchable
+  clearable
+  value={form.values.insumo}
+  onChange={(value) => form.setFieldValue("insumo", value)}
+/>
+</Grid.Col>
 
-          <Select
-            label="Tipo de solicitud"
-            leftSection={<IconCategory size={16} />}
-            placeholder="Seleccione tipo"
-            data={[
-              { value: "ordinaria", label: "Ordinaria" },
-              { value: "urgente", label: "Urgente" }
-            ]}
-            {...form.getInputProps("tipoSolicitud")}
-            required
-          />
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <NumberInput
+              label="Cantidad"
+              min={1}
+              leftSection={<IconPackage size={16} />}
+              {...form.getInputProps("cantidad")}
+            />
+          </Grid.Col>
 
-          <TextInput
-            label="Servicio"
-            leftSection={<IconHospital size={16} />}
-            placeholder="Ej. Urgencias"
-            {...form.getInputProps("servicio")}
-            required
-          />
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <TextInput
+              label="Quien solicita"
+              leftSection={<IconUser size={16} />}
+              {...form.getInputProps("solicitante")}
+            />
+          </Grid.Col>
 
-          <TextInput
-            label="Subalmacén"
-            leftSection={<IconBuildingWarehouse size={16} />}
-            placeholder="Nombre del subalmacén"
-            {...form.getInputProps("subalmacen")}
-            required
-          />
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <Select
+              label="Tipo de solicitud"
+              placeholder="Seleccione tipo"
+              leftSection={<IconCategory size={16} />}
+              data={catalogoTipoSolicitud}
+              {...form.getInputProps("tipoSolicitud")}
+            />
+          </Grid.Col>
 
-          
-          <TextInput
-            label="Central de Costos"
-            leftSection={<IconBuildingWarehouse size={16} />}
-            placeholder="Central de Costos"
-            {...form.getInputProps("cc")}
-            required
-          />
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <Select
+              label="Servicio"
+              placeholder="Seleccione servicio"
+              leftSection={<IconHospital size={16} />}
+              data={catalogoServicios}
+              searchable
+              {...form.getInputProps("servicio")}
+            />
+          </Grid.Col>
 
-          <Group justify="center" mt="md">
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <Select
+              label="Subalmacén"
+              placeholder="Seleccione subalmacén"
+              leftSection={<IconBuildingWarehouse size={16} />}
+              data={catalogoSubalmacen}
+              {...form.getInputProps("subalmacen")}
+            />
+          </Grid.Col>
 
-            <Button
-              type="submit"
-              loading={loading}
-              leftSection={<IconSend size={18} />}
-            >
-              Enviar solicitud
-            </Button>
+          <Grid.Col span={12}>
+            <Select
+              label="Central de costos"
+              placeholder="Seleccione centro de costos"
+              leftSection={<IconBuilding size={16} />}
+              data={catalogoCC}
+              searchable
+              {...form.getInputProps("cc")}
+            />
+          </Grid.Col>
 
-          </Group>
+        </Grid>
 
-        </Stack>
+        <Group justify="center" mt="md">
+          <Button
+            type="submit"
+            loading={loading}
+            leftSection={<IconSend size={18} />}
+          >
+            Enviar solicitud
+          </Button>
+        </Group>
 
-      </form>
+      </Stack>
 
-    </Paper>
+    </form>
   );
 }

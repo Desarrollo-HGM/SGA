@@ -4,17 +4,18 @@ import App from "./App.tsx";
 import { AuthProvider } from "./context/AuthContext";
 import { MantineProvider } from "@mantine/core";
 
+import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-   <MantineProvider
-  defaultColorScheme="light"
-  theme={{
-    fontFamily: "Inter, sans-serif",
-    primaryColor: "blue",
-  }}
->
-
+    <MantineProvider
+      defaultColorScheme="light"
+      theme={{
+        fontFamily: "Inter, sans-serif",
+        primaryColor: "blue",
+      }}
+    >
       <AuthProvider>
         <App />
       </AuthProvider>
