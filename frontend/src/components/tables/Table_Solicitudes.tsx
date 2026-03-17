@@ -29,13 +29,72 @@ import CryptoJS from "crypto-js";
 import type { CartItem, Insumo } from "../../types/global";
 
 /* INVENTARIO DEMO */
-
 const inventarioMock: Insumo[] = [
-  { id: 1, insumo: "Guantes", servicio: "Urgencias", subalmacen: "NEFROLOGÍA", lote: "L01", stock: 100, minimo: 50, maximo: 100 },
-  { id: 2, insumo: "Cubrebocas", servicio: "Laboratorio", subalmacen: "NEFROLOGÍA", lote: "L02", stock: 80, minimo: 60, maximo: 120 },
-  { id: 3, insumo: "Jeringas", servicio: "Enfermería", subalmacen: "NEFROLOGÍA", lote: "L03", stock: 50, minimo: 30, maximo: 60 },
-  { id: 4, insumo: "Gasas", servicio: "Hospitalización", subalmacen: "NEFROLOGÍA", lote: "L04", stock: 120, minimo: 95, maximo: 190 },
-  { id: 5, insumo: "Alcohol", servicio: "Quirófano", subalmacen: "NEFROLOGÍA", lote: "L05", stock: 60, minimo: 70, maximo: 140 }
+  {
+    id: 1,
+    clave: "INS-001",
+    insumo: "Guantes",
+    tipo_insumo: "Material de curación",
+    unidad_distribucion: "Caja",
+    servicio: "Urgencias",
+    subalmacen: "NEFROLOGÍA",
+    lote: "L01",
+    stock: 100,
+    minimo: 50,
+    maximo: 100
+  },
+  {
+    id: 2,
+    clave: "INS-002",
+    insumo: "Cubrebocas",
+    tipo_insumo: "Equipo de protección",
+    unidad_distribucion: "Caja",
+    servicio: "Laboratorio",
+    subalmacen: "NEFROLOGÍA",
+    lote: "L02",
+    stock: 80,
+    minimo: 60,
+    maximo: 120
+  },
+  {
+    id: 3,
+    clave: "INS-003",
+    insumo: "Jeringas",
+    tipo_insumo: "Material médico",
+    unidad_distribucion: "Paquete",
+    servicio: "Enfermería",
+    subalmacen: "NEFROLOGÍA",
+    lote: "L03",
+    stock: 50,
+    minimo: 30,
+    maximo: 60
+  },
+  {
+    id: 4,
+    clave: "INS-004",
+    insumo: "Gasas",
+    tipo_insumo: "Material de curación",
+    unidad_distribucion: "Paquete",
+    servicio: "Hospitalización",
+    subalmacen: "NEFROLOGÍA",
+    lote: "L04",
+    stock: 120,
+    minimo: 95,
+    maximo: 190
+  },
+  {
+    id: 5,
+    clave: "INS-005",
+    insumo: "Alcohol",
+    tipo_insumo: "Antiséptico",
+    unidad_distribucion: "Frasco",
+    servicio: "Quirófano",
+    subalmacen: "NEFROLOGÍA",
+    lote: "L05",
+    stock: 60,
+    minimo: 70,
+    maximo: 140
+  }
 ];
 
 /* COMPONENTE */
@@ -155,7 +214,7 @@ export default function SolicitudesDashboard() {
 
      /* LOGO */
 
-    doc.addImage(logo, "PNG", 10, 5, 25, 20);
+    doc.addImage(logo, "PNG", 10, 10, 25, 20);
     doc.setFontSize(16);
     doc.text("Solicitud de Insumos", 65, 20);
 
@@ -369,66 +428,95 @@ export default function SolicitudesDashboard() {
 
     records={items}
 
-    columns={[
+   columns={[
 
-      {
-        accessor: "insumo",
-        title: "Insumo"
-      },
+  {
+    accessor: "clave",
+    title: "Clave"
+  },
 
-      {
-        accessor: "servicio",
-        title: "Servicio"
-      },
+  {
+    accessor: "insumo",
+    title: "Insumo"
+  },
 
-      {
-        accessor: "stock",
-        title: "Stock",
-        render: (r:any)=>(
-          <Badge
-            color={
-              r.stock <= r.minimo
-                ? "red"
-                : r.stock <= r.minimo + 20
-                ? "yellow"
-                : "green"
-            }
-            variant="light"
-          >
-            {r.stock}
-          </Badge>
-        )
-      },
+  {
+    accessor: "tipo_insumo",
+    title: "Tipo"
+  },
 
-      {
-        accessor: "minimo",
-        title: "Min"
-      },
+  {
+    accessor: "unidad_distribucion",
+    title: "Unidad"
+  },
 
-      {
-        accessor: "maximo",
-        title: "Max"
-      },
+  {
+    accessor: "servicio",
+    title: "Servicio"
+  },
 
-      {
-        accessor: "accion",
-        title: "Solicitud",
-        textAlign:"center",
+  {
+    accessor: "subalmacen",
+    title: "Subalmacén"
+  },
 
-        render: (record:any)=>(
-          <Button
-            size="xs"
-            radius="xl"
-            color="teal"
-            leftSection={<IconPlus size={14}/>}
-            onClick={()=>addToCart(record)}
-          >
-            Solicitar
-          </Button>
-        )
-      }
+  {
+    accessor: "lote",
+    title: "Lote"
+  },
 
-    ]}
+  {
+    accessor: "stock",
+    title: "Stock",
+    render: (r:any)=>(
+
+      <Badge
+        color={
+          r.stock <= r.minimo
+            ? "red"
+            : r.stock <= r.minimo + 20
+            ? "yellow"
+            : "green"
+        }
+        variant="light"
+      >
+        {r.stock}
+      </Badge>
+
+    )
+  },
+
+  {
+    accessor: "minimo",
+    title: "Min"
+  },
+
+  {
+    accessor: "maximo",
+    title: "Max"
+  },
+
+  {
+    accessor: "accion",
+    title: "Solicitud",
+    textAlign:"center",
+
+    render: (record:any)=>(
+
+      <Button
+        size="xs"
+        radius="xl"
+        color="teal"
+        leftSection={<IconPlus size={14}/>}
+        onClick={()=>addToCart(record)}
+      >
+        Solicitar
+      </Button>
+
+    )
+  }
+
+]}
   />
 
 </Card>

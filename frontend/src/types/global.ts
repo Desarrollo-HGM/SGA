@@ -1,8 +1,11 @@
 /* MODELOS */
 
 export interface Insumo {
-  id: number;
+ id: number;
+  clave: string;
   insumo: string;
+  tipo_insumo: string;
+  unidad_distribucion: string;
   servicio: string;
   subalmacen: string;
   lote: string;

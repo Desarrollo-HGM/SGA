@@ -55,7 +55,7 @@ const mockdata: NavItem[] = [
   },
   {
     icon: IconArrowsTransferUpDown,
-    title: 'Movimientos',
+    title: 'Surtir Solicitudes',
     description: 'Flujo de entradas y salida de insumos',
     link: '/Movimientos',
   },

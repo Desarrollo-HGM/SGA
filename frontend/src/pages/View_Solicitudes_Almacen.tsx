@@ -1,41 +1,23 @@
 
-import { Box, Title } from '@mantine/core';
-
 import View_solicitudes_almacen from "../components/tables/Table_Solicitudes";
-import '../styles/Alta_Almacen.css';
+import { Box } from '@mantine/core';
 
-
-const SeccionSolicitudes = () => {
- 
-
+export default function SeccionSolicitudes() {
   return (
-    <div className="alta-almacen-container">
 
-     
-
+  <div className="alta-almacen-container">
 
 
- 
-     
-      {/* Tabla */}
-      <Box className="tabla-section">
-         <Title
-        order={6}
-        style={{
-          fontWeight: 900,
-          color: '#003366',
-          borderBottom: '1px solid #D1D5DB',
-          paddingBottom: 4,
-          marginBottom: 6,
-        }}
-      >
-        Solicitudes
-      </Title>
-        
-        <View_solicitudes_almacen />
-      </Box>
-    </div>
+
+    <Box className="tabla-section">
+    
+      
+            <View_solicitudes_almacen />
+          </Box>
+           
+
+</div>
+
+
   );
-};
-
-export default SeccionSolicitudes;
+}
