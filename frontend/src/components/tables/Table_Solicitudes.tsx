@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import { IconBuildingHospital } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
+import logo from "../../assets/hgm.png";
 
 import {
   IconShoppingCart,
@@ -25,24 +26,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import QRCode from "qrcode";
 import CryptoJS from "crypto-js";
-
-/* MODELOS */
-
-interface Insumo {
-  id: number;
-  insumo: string;
-  servicio: string;
-  subalmacen: string;
-  lote: string;
-  stock: number;
-  minimo: number;
-  maximo: number;
-}
-
-interface CartItem extends Insumo {
-  cantidad: number;
-  justificacion?: string;
-}
+import type { CartItem, Insumo } from "../../types/global";
 
 /* INVENTARIO DEMO */
 
@@ -57,6 +41,8 @@ const inventarioMock: Insumo[] = [
 /* COMPONENTE */
 
 export default function SolicitudesDashboard() {
+
+
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
 
@@ -166,35 +152,62 @@ export default function SolicitudesDashboard() {
 
     const doc = new jsPDF();
 
+
+     /* LOGO */
+
+    doc.addImage(logo, "PNG", 10, 5, 25, 20);
     doc.setFontSize(16);
-    doc.text("Solicitud de Insumos", 20, 20);
+    doc.text("Solicitud de Insumos", 65, 20);
 
     doc.setFontSize(11);
-
     doc.text(`Folio: ${folio}`, 20, 35);
     doc.text(`Fecha: ${fecha}`, 20, 42);
-    doc.text(`Solicitante: ${usuario}`, 20, 49);
+    doc.text(`Almacén: ${usuario}`, 20, 49);
     doc.text(`Servicio: ${servicioSolicitante}`, 20, 56);
+    
 
     if (autorizado) {
       doc.text(`Autorizado por: ${medico}`, 20, 63);
     }
 
     autoTable(doc, {
-      startY: 75,
-      head: [["Insumo", "Cantidad", "Lote"]],
-      body: cart.map(i => [
-        i.insumo,
-        i.cantidad,
-        i.lote
-      ])
-    });
+  startY: 75,
+
+  head: [["Insumo", "Cantidad", "Lote"]],
+
+  body: cart.map(i => [
+    i.insumo,
+    i.cantidad,
+    i.lote
+  ]),
+
+  theme: "grid",
+
+  headStyles: {
+    fillColor: [0, 70, 140], // azul institucional
+    textColor: 255,
+    halign: "center"
+  },
+
+  bodyStyles: {
+    textColor: 0
+  },
+
+  alternateRowStyles: {
+    fillColor: [230, 240, 255] // azul claro
+  },
+
+  styles: {
+    fontSize: 10
+  }
+
+});
 
     const finalY = (doc as any).lastAutoTable.finalY;
 
     doc.setFontSize(8);
 
-    doc.text("Hash de autenticidad:", 20, finalY + 15);
+    doc.text("Firma digital:", 20, finalY + 15);
 
     doc.text(
       doc.splitTextToSize(hash, 160),
@@ -206,6 +219,8 @@ export default function SolicitudesDashboard() {
 
     doc.save(`Solicitud_${folio}.pdf`);
     setCart([]);
+
+
     /* OBJETO PARA BASE DE DATOS */
 
     const solicitudDB = {
@@ -446,6 +461,11 @@ export default function SolicitudesDashboard() {
 
               {cart.map(item => (
 
+          
+
+
+
+
                 <tr key={item.id}>
 
                   <td style={{ textAlign: "center" }}>
@@ -465,7 +485,7 @@ export default function SolicitudesDashboard() {
 
                   <td style={{ textAlign: "center" }}>
 
-                {(item.cantidad > item.maximo || item.cantidad > item.stock) && (
+               {(item.stock + item.cantidad > item.maximo) && (
   <>
     <TextInput
       placeholder={
