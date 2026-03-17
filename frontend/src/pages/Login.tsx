@@ -10,7 +10,6 @@ import {
   TextInput,
   PasswordInput,
   Button,
-  Title,
   Alert,
   Stack,
   Image
@@ -60,7 +59,7 @@ export default function Login() {
       const { user, token } = await login(username, password);
 
       console.log("✅ Login correcto:", { user, token });
-
+      
       setSuccess("Acceso correcto, redirigiendo...");
 
       setTimeout(() => {

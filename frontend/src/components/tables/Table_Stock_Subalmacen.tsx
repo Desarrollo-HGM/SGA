@@ -15,6 +15,7 @@ import autoTable from "jspdf-autotable";
 import QRCode from "qrcode";
 import logo from "../../assets/hgm.png";
 import {  TimeInput } from "@mantine/dates";
+
 interface Insumo {
   id: number;
   insumo: string;
@@ -27,11 +28,14 @@ interface Insumo {
 
 }
 
+
+
 interface FormData {
   quienSurte: string;
   fecha: string;
   hora: string;
 }
+
 
 const insumosMock: Insumo[] = [
   {

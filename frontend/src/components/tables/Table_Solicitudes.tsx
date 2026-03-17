@@ -1,374 +1,525 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   AppShell,
   Group,
   Card,
   Text,
-  Table,
-  Badge,
-  Button,
   TextInput,
-  Modal,
-  Grid
+  Table,
+  Button,
+  Badge,
+  Switch
 } from "@mantine/core";
+import { IconBuildingHospital } from "@tabler/icons-react";
+import { DataTable } from "mantine-datatable";
 
 import {
-  IconClipboardList,
-  IconClock,
-  IconCheck,
-  IconX,
-  IconEdit
+  IconShoppingCart,
+  IconPlus,
+  IconTrash,
+  IconSearch,
+  IconFileInvoice
 } from "@tabler/icons-react";
 
-import SolicitudForm from "../../components/forms/Formulario_Solicitudes";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import QRCode from "qrcode";
+import CryptoJS from "crypto-js";
 
-interface Solicitud {
+/* MODELOS */
+
+interface Insumo {
   id: number;
-  folio: string;
-  tipo: string;
-  fecha: string;
-  solicitante: string;
-  servicio: string;
   insumo: string;
+  servicio: string;
   subalmacen: string;
   lote: string;
-  cantidad: number;
-  estado: "Pendiente" | "Aprobada" | "Rechazada" | "Completada";
+  stock: number;
+  minimo: number;
+  maximo: number;
 }
 
-const solicitudesMock: Solicitud[] = [
-  { id: 1, folio:"2025-S-00001", tipo: "Reposición", fecha: "2026-02-03", solicitante: "Juan Pérez", servicio: "Mantenimiento", insumo: "Tornillos", subalmacen: "A", lote: "L-2026-01", estado: "Pendiente", cantidad: 100 },
-  { id: 2, folio:"2025-S-00002", tipo: "Urgente", fecha: "2026-02-02", solicitante: "María López", servicio: "Producción", insumo: "Clavos", subalmacen: "B", lote: "L-2026-02", estado: "Pendiente", cantidad: 200 },
-  { id: 3, folio:"2025-S-00003", tipo: "Normal", fecha: "2026-02-01", solicitante: "Carlos Ruiz", servicio: "Calidad", insumo: "Tuercas", subalmacen: "C", lote: "L-2026-03", estado: "Aprobada", cantidad: 150 },
-  { id: 4, folio:"2025-S-00004", tipo: "Cancelada", fecha: "2026-02-01", solicitante: "Ana Torres", servicio: "Compras", insumo: "Arandelas", subalmacen: "C", lote: "L-2026-04", estado: "Rechazada", cantidad: 50 },
-  { id: 24, folio:"2025-S-00024", tipo: "Normal", fecha: "2026-02-01", solicitante: "Ana Torres", servicio: "Compras", insumo: "Arandelas", subalmacen: "C", lote: "L-2026-04", estado: "Completada", cantidad: 50 },
+interface CartItem extends Insumo {
+  cantidad: number;
+  justificacion?: string;
+}
+
+/* INVENTARIO DEMO */
+
+const inventarioMock: Insumo[] = [
+  { id: 1, insumo: "Guantes", servicio: "Urgencias", subalmacen: "NEFROLOGÍA", lote: "L01", stock: 100, minimo: 50, maximo: 100 },
+  { id: 2, insumo: "Cubrebocas", servicio: "Laboratorio", subalmacen: "NEFROLOGÍA", lote: "L02", stock: 80, minimo: 60, maximo: 120 },
+  { id: 3, insumo: "Jeringas", servicio: "Enfermería", subalmacen: "NEFROLOGÍA", lote: "L03", stock: 50, minimo: 30, maximo: 60 },
+  { id: 4, insumo: "Gasas", servicio: "Hospitalización", subalmacen: "NEFROLOGÍA", lote: "L04", stock: 120, minimo: 95, maximo: 190 },
+  { id: 5, insumo: "Alcohol", servicio: "Quirófano", subalmacen: "NEFROLOGÍA", lote: "L05", stock: 60, minimo: 70, maximo: 140 }
 ];
 
+/* COMPONENTE */
+
 export default function SolicitudesDashboard() {
-
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"Pendiente" | "Aprobada" | "Rechazada" | "Completada" | null>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-  const [openedSurtir, setOpenedSurtir] = useState(false);
-  const [openedSolicitud, setOpenedSolicitud] = useState(false);
+  const [usuario, setUsuario] = useState("");
+  const [servicioSolicitante, setServicioSolicitante] = useState("");
 
-  const [selectedSolicitud, setSelectedSolicitud] = useState<Solicitud | null>(null);
+  const [autorizado, setAutorizado] = useState(false);
+  const [medico, setMedico] = useState("");
 
-  const [loading, setLoading] = useState(false);
+  /* FILTRO */
 
-  const totalSolicitudes = solicitudesMock.length;
-  const pendientes = solicitudesMock.filter((s) => s.estado === "Pendiente").length;
-  const aprobada = solicitudesMock.filter((s) => s.estado === "Aprobada").length;
-  const rechazada = solicitudesMock.filter((s) => s.estado === "Rechazada").length;
-  const completada = solicitudesMock.filter((s) => s.estado === "Completada").length;
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
 
-  const filteredSolicitudes = solicitudesMock.filter((s) => {
+    return inventarioMock.filter(i =>
+      i.insumo.toLowerCase().includes(q) ||
+      i.servicio.toLowerCase().includes(q) ||
+      i.subalmacen.toLowerCase().includes(q)
+    );
+  }, [search]);
 
-    const query = search.toLowerCase();
+  /* AGRUPAR */
 
-    const matchSearch =
-      s.folio.toLowerCase().includes(query) ||
-      s.tipo.toLowerCase().includes(query) ||
-      s.solicitante.toLowerCase().includes(query) ||
-      s.servicio.toLowerCase().includes(query) ||
-      s.insumo.toLowerCase().includes(query) ||
-      s.lote.toLowerCase().includes(query);
+  const agrupados = useMemo(() => {
+    return filtered.reduce((acc: any, item) => {
+      if (!acc[item.subalmacen]) acc[item.subalmacen] = [];
+      acc[item.subalmacen].push(item);
+      return acc;
+    }, {});
+  }, [filtered]);
 
-    const matchFilter = filter ? s.estado === filter : true;
+  /* AGREGAR AL CARRITO */
 
-    return matchSearch && matchFilter;
-  });
+  const addToCart = (item: Insumo) => {
+    const exist = cart.find(i => i.id === item.id);
 
-  const getEstadoIcon = (estado: Solicitud["estado"]) => {
+    if (exist) {
+      if (exist.cantidad >= item.stock) {
+        alert("Stock insuficiente");
+        return;
+      }
 
-    switch (estado) {
-      case "Pendiente":
-        return <IconClock size={18} color="#facc15" />;
-      case "Aprobada":
-        return <IconCheck size={18} color="#48c522" />;
-      case "Rechazada":
-        return <IconX size={18} color="#ef4444" />;
-      case "Completada":
-        return <IconCheck size={18} color="#01611e" />;
-      default:
-        return null;
+      setCart(cart.map(i =>
+        i.id === item.id
+          ? { ...i, cantidad: i.cantidad + 1 }
+          : i
+      ));
+
+    } else {
+      setCart([...cart, { ...item, cantidad: 1 }]);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  /* ELIMINAR */
 
-    e.preventDefault();
+  const removeFromCart = (id: number) => {
+    setCart(cart.filter(i => i.id !== id));
+  };
 
-    if (!selectedSolicitud) return;
+  /* ACTUALIZAR CANTIDAD */
 
-    setLoading(true);
+  const updateCantidad = (id: number, val: number) => {
+    if (val <= 0) return;
 
-    setTimeout(() => {
+    setCart(cart.map(i =>
+      i.id === id
+        ? { ...i, cantidad: val }
+        : i
+    ));
+  };
 
-      alert(`Solicitud ${selectedSolicitud.folio} atendida`);
+  /* GENERAR PDF */
 
-      setLoading(false);
-      setOpenedSurtir(false);
+  const generarPDF = async () => {
 
-    }, 1500);
+    if (cart.length === 0) {
+      alert("El carrito está vacío");
+      return;
+    }
+
+    for (const i of cart) {
+
+      if ((i.cantidad > i.maximo || i.cantidad > i.stock) && !i.justificacion) {
+        alert(`Debe justificar ${i.insumo}`);
+        return;
+      }
+
+ 
+
+    }
+
+    const folio = `SOL-${Date.now()}`;
+    const fecha = new Date().toLocaleString();
+
+    const datos = {
+      folio,
+      fecha,
+      usuario,
+      servicio: servicioSolicitante,
+      autorizado,
+      medico,
+      detalle: cart
+    };
+
+    const hash = CryptoJS.SHA256(JSON.stringify(datos)).toString();
+    const qr = await QRCode.toDataURL(JSON.stringify({ ...datos, hash }));
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text("Solicitud de Insumos", 20, 20);
+
+    doc.setFontSize(11);
+
+    doc.text(`Folio: ${folio}`, 20, 35);
+    doc.text(`Fecha: ${fecha}`, 20, 42);
+    doc.text(`Solicitante: ${usuario}`, 20, 49);
+    doc.text(`Servicio: ${servicioSolicitante}`, 20, 56);
+
+    if (autorizado) {
+      doc.text(`Autorizado por: ${medico}`, 20, 63);
+    }
+
+    autoTable(doc, {
+      startY: 75,
+      head: [["Insumo", "Cantidad", "Lote"]],
+      body: cart.map(i => [
+        i.insumo,
+        i.cantidad,
+        i.lote
+      ])
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY;
+
+    doc.setFontSize(8);
+
+    doc.text("Hash de autenticidad:", 20, finalY + 15);
+
+    doc.text(
+      doc.splitTextToSize(hash, 160),
+      20,
+      finalY + 20
+    );
+
+    doc.addImage(qr, "PNG", 150, finalY + 5, 40, 40);
+
+    doc.save(`Solicitud_${folio}.pdf`);
+    setCart([]);
+    /* OBJETO PARA BASE DE DATOS */
+
+    const solicitudDB = {
+
+      folio,
+      fecha,
+
+      usuario,
+      servicio: servicioSolicitante,
+
+      autorizacion: {
+        requiere: autorizado,
+        medico: autorizado ? medico : null
+      },
+
+      items: cart.map(i => ({
+        insumo_id: i.id,
+        insumo: i.insumo,
+        cantidad: i.cantidad,
+        lote: i.lote,
+        subalmacen: i.subalmacen,
+        justificacion: i.justificacion || null
+      }))
+
+    };
+
+    console.log("Enviar a API:", solicitudDB);
+
   };
 
   return (
+    <AppShell padding="md">
+      <AppShell.Main>
 
-    <AppShell header={{ height: 60 }}>
+        <Group justify="apart" mb="lg">
+          <Text fw={700} size="xl">
+            Solicitud de insumos
+          </Text>
 
-      <AppShell.Main style={{ paddingLeft: 0, paddingRight: 0 }}>
-
-        {/* KPI Cards */}
-
-        <Group mt="md">
-
-          <Card className="kpi-card" onClick={() => setFilter(null)}>
-            <IconClipboardList size={28} />
-            <Text fw={700}>{totalSolicitudes}</Text>
-            <Text size="sm">Total</Text>
-          </Card>
-
-          <Card className="kpi-card" onClick={() => setFilter("Pendiente")}>
-            <IconClock size={28} />
-            <Text fw={700}>{pendientes}</Text>
-            <Text size="sm">Pendientes</Text>
-          </Card>
-
-          <Card className="kpi-card" onClick={() => setFilter("Aprobada")}>
-            <IconCheck size={28} />
-            <Text fw={700}>{aprobada}</Text>
-            <Text size="sm">Aprobadas</Text>
-          </Card>
-
-          <Card className="kpi-card" onClick={() => setFilter("Rechazada")}>
-            <IconX size={28} />
-            <Text fw={700}>{rechazada}</Text>
-            <Text size="sm">Rechazadas</Text>
-          </Card>
-
-          <Card className="kpi-card" onClick={() => setFilter("Completada")}>
-            <IconCheck size={28} />
-            <Text fw={700}>{completada}</Text>
-            <Text size="sm">Completadas</Text>
-          </Card>
-
+          <Badge color="blue" leftSection={<IconShoppingCart size={14} />}>
+            {cart.length} en carrito
+          </Badge>
         </Group>
 
-        {/* Buscador + botón */}
+        {/* DATOS SOLICITUD */}
 
-        <Group justify="space-between" mt="lg" mb="md">
+        <Card withBorder mb="lg">
 
-          <TextInput
-            placeholder="Buscar solicitud..."
-            value={search}
-            onChange={(e) => setSearch(e.currentTarget.value)}
-            style={{ width: 300 }}
-          />
+          <Text fw={700} mb="md">
+            Datos de solicitud
+          </Text>
 
+          <Group>
 
-        </Group>
+            <TextInput
+              label="Usuario solicitante"
+              value={usuario}
+              onChange={(e) => setUsuario(e.currentTarget.value)}
+            />
 
-        {/* Tabla */}
+            <TextInput
+              label="Servicio solicitante"
+              value={servicioSolicitante}
+              onChange={(e) => setServicioSolicitante(e.currentTarget.value)}
+            />
 
-       <Table striped highlightOnHover>
+          </Group>
+
+        </Card>
+
+        {/* AUTORIZACION */}
+
+        <Card withBorder mb="lg">
+
+          <Group>
+
+            <Switch
+              label="Requiere autorización médica"
+              checked={autorizado}
+              onChange={(e) => setAutorizado(e.currentTarget.checked)}
+            />
+
+            {autorizado && (
+
+              <TextInput
+                label="Médico que autoriza"
+                value={medico}
+                onChange={(e) => setMedico(e.currentTarget.value)}
+              />
+
+            )}
+
+          </Group>
+
+        </Card>
+
+        {/* BUSCAR */}
+
+        <TextInput
+          placeholder="Buscar insumo..."
+          leftSection={<IconSearch size={16} />}
+          value={search}
+          onChange={(e) => setSearch(e.currentTarget.value)}
+          mb="lg"
+          style={{ width: 300 }}
+        />
+
+        {/* INVENTARIO */}
+
+        {Object.entries(agrupados).map(([sub, items]: any) => (
+
+          <Card
+  key={sub}
+  withBorder
+  radius="md"
+  shadow="sm"
+  mt="md"
+  style={{
+    borderLeft: "6px solid #0b6fa4",
+    background: "#f8fbfd"
+  }}
+>
+
+  <Group justify="space-between" mb="sm">
+
+    <Group>
+      <IconBuildingHospital size={22} color="#0b6fa4" />
+
+      <Text fw={700} size="lg" c="#0b6fa4">
+        Subalmacén {sub}
+      </Text>
+    </Group>
+
+    <Badge color="blue" variant="light">
+      {items.length} insumos
+    </Badge>
+
+  </Group>
+
+  <DataTable
+    withTableBorder
+    highlightOnHover
+    striped
+    verticalSpacing="xs"
+    horizontalSpacing="md"
+
+    records={items}
+
+    columns={[
+
+      {
+        accessor: "insumo",
+        title: "Insumo"
+      },
+
+      {
+        accessor: "servicio",
+        title: "Servicio"
+      },
+
+      {
+        accessor: "stock",
+        title: "Stock",
+        render: (r:any)=>(
+          <Badge
+            color={
+              r.stock <= r.minimo
+                ? "red"
+                : r.stock <= r.minimo + 20
+                ? "yellow"
+                : "green"
+            }
+            variant="light"
+          >
+            {r.stock}
+          </Badge>
+        )
+      },
+
+      {
+        accessor: "minimo",
+        title: "Min"
+      },
+
+      {
+        accessor: "maximo",
+        title: "Max"
+      },
+
+      {
+        accessor: "accion",
+        title: "Solicitud",
+        textAlign:"center",
+
+        render: (record:any)=>(
+          <Button
+            size="xs"
+            radius="xl"
+            color="teal"
+            leftSection={<IconPlus size={14}/>}
+            onClick={()=>addToCart(record)}
+          >
+            Solicitar
+          </Button>
+        )
+      }
+
+    ]}
+  />
+
+</Card>
+
+        ))}
+
+        {/* CARRITO */}
+
+        <Card withBorder mt="xl">
+
+          <Text fw={700}>
+            Carrito de solicitud
+          </Text>
+
+          <Table striped highlightOnHover>
             <thead className="table-head">
 
-         
+              <tr>
 
-            <tr>
-              <th>Folio</th>
-              <th>Tipo</th>
-              <th>Fecha</th>
-              <th>Solicitante</th>
-              <th>Servicio</th>
-              <th>Insumo</th>
-              <th>Sub Almacén</th>
-              <th>Lote</th>
-              <th>Cantidad</th>
-              <th>Estado</th>
-              <th>Acción</th>
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {filteredSolicitudes.map((s) => (
-
-              <tr key={s.id}>
-
-                <td>{s.folio}</td>
-                <td>{s.tipo}</td>
-                <td>{s.fecha}</td>
-                <td>{s.solicitante}</td>
-                <td>{s.servicio}</td>
-                <td>{s.insumo}</td>
-                <td>{s.subalmacen}</td>
-                <td>{s.lote}</td>
-                <td>{s.cantidad}</td>
-
-                <td>
-
-                  <Badge
-                    color={
-                      s.estado === "Pendiente"
-                        ? "yellow"
-                        : s.estado === "Aprobada"
-                        ? "lime"
-                        : s.estado === "Rechazada"
-                        ? "red"
-                        : "green"
-                    }
-                    leftSection={getEstadoIcon(s.estado)}
-                  >
-                    {s.estado}
-                  </Badge>
-
-                </td>
-
-                <td>
-
-                  {(s.estado === "Pendiente" || s.estado === "Aprobada") && (
-
-                    <Button
-                      size="xs"
-                      variant="light"
-                      color="blue"
-                      leftSection={<IconEdit size={16} />}
-                      onClick={() => {
-
-                        setSelectedSolicitud(s);
-                        setOpenedSurtir(true);
-
-                      }}
-                    >
-                      Surtir
-                    </Button>
-
-                  )}
-
-                </td>
+                <th style={{ textAlign: "center" }}>Insumo</th>
+                <th style={{ textAlign: "center" }}>Cantidad</th>
+                <th style={{ textAlign: "center" }}>Justificación</th>
+                <th style={{ textAlign: "center" }}>Acción</th>
 
               </tr>
 
-            ))}
+            </thead>
 
-          </tbody>
+            <tbody>
 
-        </Table>
+              {cart.map(item => (
 
-        {/* Modal surtir */}
+                <tr key={item.id}>
 
-        <Modal
-          opened={openedSurtir}
-          onClose={() => setOpenedSurtir(false)}
-          title="Surtir almacén"
-          centered
-          size="lg"
-        >
+                  <td style={{ textAlign: "center" }}>
+                    {item.insumo}
+                  </td>
 
-          {selectedSolicitud && (
+                  <td style={{ textAlign: "center" }}>
+                    <TextInput
+                      type="number"
+                      value={item.cantidad}
+                      style={{ width: 80, margin: "auto" }}
+                      onChange={(e) =>
+                        updateCantidad(item.id, Number(e.currentTarget.value))
+                      }
+                    />
+                  </td>
 
-            <form onSubmit={handleSubmit}>
+                  <td style={{ textAlign: "center" }}>
 
-              <Grid>
+                {(item.cantidad > item.maximo || item.cantidad > item.stock) && (
+  <>
+    <TextInput
+      placeholder={
+        item.cantidad > item.stock
+          ? `Stock disponible: ${item.stock}`
+          : `Máximo permitido: ${item.maximo}`
+      }
+      value={item.justificacion || ""}
+      onChange={(e) => {
+        setCart(cart.map(i =>
+          i.id === item.id
+            ? { ...i, justificacion: e.currentTarget.value }
+            : i
+        ));
+      }}
+    />
+  </>
+)}
 
-                <Grid.Col span={6}>
-                  <TextInput label="Folio" value={selectedSolicitud.folio} readOnly />
-                </Grid.Col>
+                  </td>
 
-                <Grid.Col span={6}>
-                  <TextInput label="Tipo" value={selectedSolicitud.tipo} readOnly />
-                </Grid.Col>
+                  <td style={{ textAlign: "center" }}>
 
-                <Grid.Col span={6}>
-                  <TextInput label="Servicio" value={selectedSolicitud.servicio} readOnly />
-                </Grid.Col>
+                    <Button
+                      size="xs"
+                      color="red"
+                      leftSection={<IconTrash size={14} />}
+                      onClick={() => removeFromCart(item.id)}
+                    >
+                      Eliminar
+                    </Button>
 
-                <Grid.Col span={6}>
-                  <TextInput label="Insumo" value={selectedSolicitud.insumo} readOnly />
-                </Grid.Col>
+                  </td>
 
-                <Grid.Col span={6}>
-                  <TextInput label="Cantidad" value={selectedSolicitud.cantidad.toString()} readOnly />
-                </Grid.Col>
+                </tr>
 
-              </Grid>
+              ))}
 
-              <Group justify="right" mt="md">
+            </tbody>
 
-                <Button
-                  type="submit"
-                  color="green"
-                  loading={loading}
-                  leftSection={<IconCheck size={16} />}
-                >
-                  Confirmar Surtido
-                </Button>
+          </Table>
 
-                <Button
-                  variant="outline"
-                  color="gray"
-                  onClick={() => setOpenedSurtir(false)}
-                  leftSection={<IconX size={16} />}
-                >
-                  Cancelar
-                </Button>
+          <Button
+            mt="md"
+            color="green"
+            leftSection={<IconFileInvoice size={18} />}
+            onClick={generarPDF}
+          >
+            Generar solicitud
+          </Button>
 
-              </Group>
-
-            </form>
-
-          )}
-
-        </Modal>
-
-        {/* Modal nueva solicitud */}
-
-        <Modal
-          opened={openedSolicitud}
-          onClose={() => setOpenedSolicitud(false)}
-   
-          title="Nueva Solicitud"
-        
-  
-        
-        
-          centered
-          size="lg"
-          overlayProps={{ opacity: 0.55, blur: 3 }}
-          closeOnClickOutside={false}
-          zIndex={3000}
-          styles={{
-            header: {
-              position: "sticky",
-              top: 0,
-              backgroundColor: "#003366", // azul fuerte institucional
-              color: "white",
-              fontWeight: "bold",
-              zIndex: 1,
-            },
-            title: { color: "white" },
-            body: { maxHeight: "70vh", overflowY: "auto" },
-          }}
-
-
-
-
-
-
-
-
-
-        >
-
-          <SolicitudForm />
-
-        </Modal>
+        </Card>
 
       </AppShell.Main>
-
     </AppShell>
   );
 }

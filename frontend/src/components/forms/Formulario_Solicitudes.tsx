@@ -1,13 +1,15 @@
 import { useState } from "react";
 import {
   TextInput,
-  Select,
   NumberInput,
   Button,
   Stack,
   Group,
   LoadingOverlay,
-  Grid
+  Grid,
+  Paper,
+  Text,
+  Autocomplete
 } from "@mantine/core";
 
 import { DateInput } from "@mantine/dates";
@@ -18,213 +20,270 @@ import {
   IconHash,
   IconPackage,
   IconUser,
-  IconCategory,
-  IconBuildingWarehouse,
   IconSend,
-  IconHospital,
-  IconBuilding
+  IconBuilding,
+  IconPlus,
+  IconTrash
 } from "@tabler/icons-react";
 
-interface FormValues {
+/* =====================
+TIPOS
+===================== */
+
+export interface Item {
+  insumo: string;
+  cantidad: number;
+}
+
+export interface FormValues {
   fecha: Date | null;
   folio: string;
-  insumo: string | null;
-  cantidad: number;
   solicitante: string;
-  tipoSolicitud: string | null;
-  servicio: string | null;
-  subalmacen: string | null;
-  cc: string | null;
+  tipoSolicitud: string;
+  servicio: string;
+  subalmacen: string;
+  cc: string;
+ 
+  items: Item[];
 }
 
 /* =====================
-CATALOGOS
+CATÁLOGOS
 ===================== */
 
-const catalogoInsumos = [
-  { value: "guantes", label: "Guantes" },
-  { value: "cubrebocas", label: "Cubrebocas" },
-  { value: "jeringa5", label: "Jeringa 5ml" },
-  { value: "gasas", label: "Gasas" },
-  { value: "alcohol", label: "Alcohol" }
+export const catalogoInsumos: string[] = [
+  "Guantes",
+  "Cubrebocas",
+  "Jeringa 5ml",
+  "Gasas",
+  "Alcohol"
 ];
 
-const catalogoTipoSolicitud = [
-  { value: "ordinaria", label: "Ordinaria" },
-  { value: "urgente", label: "Urgente" },
-  { value: "extraordinaria", label: "Extraordinaria" }
-];
-
-const catalogoServicios = [
-  { value: "urgencias", label: "Urgencias" },
-  { value: "hospitalizacion", label: "Hospitalización" },
-  { value: "cirugia", label: "Cirugía" },
-  { value: "pediatria", label: "Pediatría" }
-];
-
-const catalogoSubalmacen = [
-  { value: "farmacia", label: "Farmacia" },
-  { value: "urgencias", label: "Subalmacén Urgencias" },
-  { value: "quirofano", label: "Quirófano" }
-];
-
-const catalogoCC = [
-  { value: "1001", label: "1001 - Dirección" },
-  { value: "1002", label: "1002 - Urgencias" },
-  { value: "1003", label: "1003 - Hospitalización" }
+export const catalogoCC: string[] = [
+  "1001 - Dirección",
+  "1002 - Urgencias",
+  "1003 - Hospitalización"
 ];
 
 export default function SolicitudForm() {
 
-  const generarFolio = () =>
-    "SOL-" + new Date().getFullYear() + "-" + Math.floor(Math.random() * 10000);
 
-  const [loading, setLoading] = useState(false);
-
-  const form = useForm<FormValues>({
-   initialValues: {
-  fecha: new Date(),
-  folio: generarFolio(),
-  insumo: null,
-  cantidad: 1,
-  solicitante: "",
-  tipoSolicitud: null,
-  servicio: null,
-  subalmacen: null,
-  cc: null
+  function generarFolio(): string {
+  const year = new Date().getFullYear();
+  const random = Math.floor(1000 + Math.random() * 9000);
+  return `SOL-${year}-${random}`;
 }
-  });
 
-  const handleSubmit = async (values: FormValues) => {
+const [loading, setLoading] = useState(false);
 
-    setLoading(true);
+const MAX_ITEMS = 20;
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+const itemVacio: Item = {
+  insumo: "",
+  cantidad: 1
+};
 
-    console.log(values);
 
-    setLoading(false);
+const form = useForm<FormValues>({
+  initialValues: {
+    fecha: new Date(),
+    folio: generarFolio(),
+    solicitante: "",
+    tipoSolicitud: "",
+    servicio: "",
+    subalmacen: "",
+    cc: "",
+    items: [{ insumo: "", cantidad: 1 }]
+  },
 
-    form.setFieldValue("folio", generarFolio());
-  };
+  validate: {
+    solicitante: (value) =>
+      value.trim().length < 3 ? "El solicitante es obligatorio" : null,
+
+    tipoSolicitud: (value) =>
+      value.trim().length === 0 ? "Ingrese el tipo de solicitud" : null,
+
+    servicio: (value) =>
+      value.trim().length === 0 ? "Ingrese el servicio" : null,
+
+    subalmacen: (value) =>
+      value.trim().length === 0 ? "Ingrese el subalmacén" : null,
+
+    cc: (value) =>
+      value.trim().length === 0 ? "Seleccione un centro de costos" : null,
+
+    items: {
+      insumo: (value) =>
+        value.trim().length === 0 ? "Seleccione un insumo" : null,
+
+      cantidad: (value) =>
+        value < 1 ? "La cantidad debe ser mayor a 0" : null
+    }
+  },
+  validateInputOnBlur: true,
+  validateInputOnChange: true
+});
+
+
+
+const handleSubmit = async (values: FormValues) => {
+
+  if (values.items.length === 0) {
+    form.setFieldError("items", "Debe agregar al menos un insumo");
+    return;
+  }
+
+  setLoading(true);
+
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  console.log(values);
+
+  setLoading(false);
+
+  form.reset();
+  form.setFieldValue("folio", generarFolio());
+};
 
   return (
+   <form onSubmit={form.onSubmit(handleSubmit)} style={{ position: "relative" }}>
+  <LoadingOverlay visible={loading} overlayProps={{ blur: 2 }} />
 
+  <Stack>
 
+    <Grid>
 
+      <Grid.Col span={{ base: 12, md: 6 }}>
+        <DateInput
+          label="Fecha"
+          leftSection={<IconCalendar size={16} />}
+          {...form.getInputProps("fecha")}
+        />
+      </Grid.Col>
 
-    
-    <form onSubmit={form.onSubmit(handleSubmit)} style={{ position: "relative" }}>
+      <Grid.Col span={{ base: 12, md: 6 }}>
+        <TextInput
+          label="Folio"
+          readOnly
+          leftSection={<IconHash size={16} />}
+          {...form.getInputProps("folio")}
+        />
+      </Grid.Col>
 
-      <LoadingOverlay visible={loading} overlayProps={{ blur: 2 }} />
+      <Grid.Col span={{ base: 12, md: 6 }}>
+        <TextInput
+          label="Solicitante"
+          leftSection={<IconUser size={16} />}
+          {...form.getInputProps("solicitante")}
+        />
+      </Grid.Col>
 
-      <Stack>
+      <Grid.Col span={{ base: 12, md: 6 }}>
+        <TextInput
+          label="Tipo de solicitud"
+          {...form.getInputProps("tipoSolicitud")}
+        />
+      </Grid.Col>
 
-        <Grid>
+      <Grid.Col span={{ base: 12, md: 6 }}>
+        <TextInput
+          label="Servicio"
+          {...form.getInputProps("servicio")}
+        />
+      </Grid.Col>
 
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <DateInput
-              label="Fecha"
-              leftSection={<IconCalendar size={16} />}
-              {...form.getInputProps("fecha")}
-            />
-          </Grid.Col>
+      <Grid.Col span={{ base: 12, md: 6 }}>
+        <TextInput
+          label="Subalmacén"
+          {...form.getInputProps("subalmacen")}
+        />
+      </Grid.Col>
 
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <TextInput
-              label="Folio"
-              leftSection={<IconHash size={16} />}
-              readOnly
-              {...form.getInputProps("folio")}
-            />
-          </Grid.Col>
+      <Grid.Col span={{ base: 12, md: 12 }}>
+        <Autocomplete
+          label="Centro de costos"
+          placeholder="Buscar..."
+          leftSection={<IconBuilding size={16} />}
+          data={catalogoCC}
+          value={form.values.cc ?? ""}
+          onChange={(value: string) => form.setFieldValue("cc", value)}
+          comboboxProps={{ withinPortal: false }}
+        />
+      </Grid.Col>
 
-          <Grid.Col span={{ base: 12, md: 6 }}>
-  <Select
-  label="Insumo"
-  placeholder="Seleccione insumo"
-  leftSection={<IconPackage size={16} />}
-  data={catalogoInsumos}
-  searchable
-  clearable
-  value={form.values.insumo}
-  onChange={(value) => form.setFieldValue("insumo", value)}
-/>
-</Grid.Col>
+    </Grid>
 
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <NumberInput
-              label="Cantidad"
-              min={1}
-              leftSection={<IconPackage size={16} />}
-              {...form.getInputProps("cantidad")}
-            />
-          </Grid.Col>
+    {/* INSUMOS */}
 
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <TextInput
-              label="Quien solicita"
-              leftSection={<IconUser size={16} />}
-              {...form.getInputProps("solicitante")}
-            />
-          </Grid.Col>
+   {form.values.items.map((item, index) => (
+  <Paper key={index} shadow="xs" p="md" withBorder>
+    <Grid>
 
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Select
-              label="Tipo de solicitud"
-              placeholder="Seleccione tipo"
-              leftSection={<IconCategory size={16} />}
-              data={catalogoTipoSolicitud}
-              {...form.getInputProps("tipoSolicitud")}
-            />
-          </Grid.Col>
+      <Grid.Col span={{ base: 12, md: 6 }}>
+        <Autocomplete
+          label="Insumo"
+          placeholder="Buscar insumo..."
+          leftSection={<IconPackage size={16} />}
+          data={catalogoInsumos}
+          value={form.values.items[index]?.insumo ?? ""}
+          onChange={(value: string) => form.setFieldValue(`items.${index}.insumo`, value)}
+          comboboxProps={{ withinPortal: false }}
+        />
+      </Grid.Col>
 
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Select
-              label="Servicio"
-              placeholder="Seleccione servicio"
-              leftSection={<IconHospital size={16} />}
-              data={catalogoServicios}
-              searchable
-              {...form.getInputProps("servicio")}
-            />
-          </Grid.Col>
+      <Grid.Col span={{ base: 12, md: 4 }}>
+        <NumberInput
+          label="Cantidad"
+          min={1}
+          value={item.cantidad}
+          onChange={(value: number | string) =>
+            form.setFieldValue(
+              `items.${index}.cantidad`,
+              typeof value === "number" ? value : 1
+            )
+          }
+        />
+      </Grid.Col>
 
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Select
-              label="Subalmacén"
-              placeholder="Seleccione subalmacén"
-              leftSection={<IconBuildingWarehouse size={16} />}
-              data={catalogoSubalmacen}
-              {...form.getInputProps("subalmacen")}
-            />
-          </Grid.Col>
+      <Grid.Col span={{ base: 12, md: 2 }}>
+        <Button
+          mt="lg"
+          color="red"
+          variant="light"
+          onClick={() => form.removeListItem("items", index)}
+        >
+          <IconTrash size={16} />
+        </Button>
+      </Grid.Col>
 
-          <Grid.Col span={12}>
-            <Select
-              label="Central de costos"
-              placeholder="Seleccione centro de costos"
-              leftSection={<IconBuilding size={16} />}
-              data={catalogoCC}
-              searchable
-              {...form.getInputProps("cc")}
-            />
-          </Grid.Col>
+    </Grid>
+  </Paper>
+))}
 
-        </Grid>
+ <Button
+  variant="outline"
+  leftSection={<IconPlus size={16} />}
+  disabled={form.values.items.length >= MAX_ITEMS}
+  onClick={() => form.insertListItem("items", itemVacio)}
+>
+  Agregar insumo
+</Button>
+{form.errors.items && (
+  <Text c="red" size="sm">
+    {form.errors.items}
+  </Text>
+)}
+    <Group justify="center">
+      <Button
+        type="submit"
+        loading={loading}
+        leftSection={<IconSend size={18} />}
+      >
+        Enviar solicitud
+      </Button>
+    </Group>
 
-        <Group justify="center" mt="md">
-          <Button
-            type="submit"
-            loading={loading}
-            leftSection={<IconSend size={18} />}
-          >
-            Enviar solicitud
-          </Button>
-        </Group>
-
-      </Stack>
-
-    </form>
+  </Stack>
+</form>
   );
 }
