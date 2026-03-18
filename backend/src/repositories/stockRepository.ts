@@ -23,10 +23,10 @@ export const stockRepository = {
         .join("cat_insumos as i", "l.id_insumo", "i.id_insumos")
         .join("subalmacenes as sa", "l.id_subalmacen", "sa.id_subalmacen")
         .join("almacenes as a", "i.id_almacen", "a.id_almacen")
-        .leftJoin("config_stock as cs", function () {
-          this.on("cs.id_insumo", "=", "i.id_insumos")
-              .andOn("cs.id_subalmacen", "=", "sa.id_subalmacen");
-        })
+        .join("config_stock as cs", function () {
+  this.on("cs.id_insumo", "=", "i.id_insumos")
+      .andOn("cs.id_subalmacen", "=", "sa.id_subalmacen");
+})
         .groupBy(
           "sa.id_subalmacen",
           "sa.nombre",

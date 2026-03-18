@@ -8,7 +8,9 @@ import {
   Table,
   Button,
   Badge,
-  Switch
+  Switch,
+  Grid,
+  Stack
 } from "@mantine/core";
 import { IconBuildingHospital } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
@@ -387,9 +389,21 @@ export default function SolicitudesDashboard() {
           style={{ width: 300 }}
         />
 
+
+
+
+<Grid>
+
+  {/* INVENTARIO */}
+  <Grid.Col span={{ base: 12, md: 8 }}>
+
+
         {/* INVENTARIO */}
 
         {Object.entries(agrupados).map(([sub, items]: any) => (
+
+
+
 
           <Card
   key={sub}
@@ -523,110 +537,183 @@ export default function SolicitudesDashboard() {
 
         ))}
 
-        {/* CARRITO */}
+</Grid.Col>
 
-        <Card withBorder mt="xl">
+
+        {/* CARRITO */}
+  <Grid.Col span={{ base: 12, md: 4 }}>
+        <Card   
+  withBorder
+  radius="md"
+  shadow="sm"
+  mt="md"
+  style={{
+    borderLeft: "6px solid #0b6fa4",
+    background: "#f8fbfd"
+  }}>
 
           <Text fw={700}>
             Carrito de solicitud
           </Text>
 
-          <Table striped highlightOnHover>
-            <thead className="table-head">
-
-              <tr>
-
-                <th style={{ textAlign: "center" }}>Insumo</th>
-                <th style={{ textAlign: "center" }}>Cantidad</th>
-                <th style={{ textAlign: "center" }}>Justificación</th>
-                <th style={{ textAlign: "center" }}>Acción</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {cart.map(item => (
-
-          
-
-
-
-
-                <tr key={item.id}>
-
-                  <td style={{ textAlign: "center" }}>
-                    {item.insumo}
-                  </td>
-
-                  <td style={{ textAlign: "center" }}>
-                    <TextInput
-                      type="number"
-                      value={item.cantidad}
-                      style={{ width: 80, margin: "auto" }}
-                      onChange={(e) =>
-                        updateCantidad(item.id, Number(e.currentTarget.value))
-                      }
-                    />
-                  </td>
-
-                  <td style={{ textAlign: "center" }}>
-
-               {(item.stock + item.cantidad > item.maximo) && (
-  <>
-    <TextInput
-      placeholder={
-        item.cantidad > item.stock
-          ? `Stock disponible: ${item.stock}`
-          : `Máximo permitido: ${item.maximo}`
-      }
-      value={item.justificacion || ""}
-      onChange={(e) => {
-        setCart(cart.map(i =>
-          i.id === item.id
-            ? { ...i, justificacion: e.currentTarget.value }
-            : i
-        ));
+        <Table
+  
+  striped
+  highlightOnHover
+  verticalSpacing="sm"
+  horizontalSpacing="md"
+  style={{
+        textAlign: "center",
+        borderTopLeftRadius: "8px"
       }}
-    />
-  </>
-)}
+>
 
-                  </td>
+<thead style={{ backgroundColor: "#0b6fa4", color: "white" }}>
+  <tr>
+    <th
+      style={{
+        textAlign: "center",
+        borderTopLeftRadius: "8px"
+      }}
+    >
+      Insumo
+    </th>
 
-                  <td style={{ textAlign: "center" }}>
+    <th style={{ textAlign: "center", width: 110 }}>
+      Cantidad
+    </th>
 
-                    <Button
-                      size="xs"
-                      color="red"
-                      leftSection={<IconTrash size={14} />}
-                      onClick={() => removeFromCart(item.id)}
-                    >
-                      Eliminar
-                    </Button>
+    <th style={{ textAlign: "center" }}>
+      Justificación
+    </th>
 
-                  </td>
+    <th
+      style={{
+        textAlign: "center",
+        borderTopLeftRadius: "8px"
+      }}
+    >
+      Acción
+    </th>
+  </tr>
+</thead>
 
-                </tr>
+  <tbody>
 
-              ))}
+    {cart.map(item => {
 
-            </tbody>
+      const requiereJustificacion =
+        item.stock + item.cantidad > item.maximo || item.cantidad > item.stock;
 
-          </Table>
+      return (
+
+        <tr key={item.id}>
+
+          {/* INSUMO */}
+          <td style={{ textAlign: "center" }}>
+            <Text fw={500}>{item.insumo}</Text>
+          </td>
+
+          {/* CANTIDAD */}
+          <td style={{ textAlign: "center" }}>
+            <TextInput
+              type="number"
+              value={item.cantidad}
+              size="xs"
+              style={{ width: 80, margin: "auto" }}
+              onChange={(e) =>
+                updateCantidad(item.id, Number(e.currentTarget.value))
+              }
+            />
+          </td>
+
+          {/* JUSTIFICACION */}
+          <td style={{ textAlign: "center" }}>
+
+            {requiereJustificacion ? (
+
+              <Stack gap={4}>
+
+                <Badge
+                  color="orange"
+                  variant="light"
+                  radius="sm"
+                >
+                  Requiere justificación
+                </Badge>
+
+                <TextInput
+                  size="xs"
+                  placeholder={
+                    item.cantidad > item.stock
+                      ? `Stock disponible: ${item.stock}`
+                      : `Máximo permitido: ${item.maximo}`
+                  }
+                  value={item.justificacion || ""}
+                  onChange={(e) => {
+                    setCart(cart.map(i =>
+                      i.id === item.id
+                        ? { ...i, justificacion: e.currentTarget.value }
+                        : i
+                    ));
+                  }}
+                />
+
+              </Stack>
+
+            ) : (
+
+              <Badge color="green" variant="light">
+                OK
+              </Badge>
+
+            )}
+
+          </td>
+
+          {/* ACCION */}
+          <td style={{ textAlign: "center" }}>
+
+            <Button
+              size="xs"
+              color="red"
+              variant="light"
+              radius="xl"
+              leftSection={<IconTrash size={14} />}
+              onClick={() => removeFromCart(item.id)}
+            >
+              Eliminar
+            </Button>
+
+          </td>
+
+        </tr>
+
+      );
+
+    })}
+
+  </tbody>
+
+</Table>
 
           <Button
-            mt="md"
-            color="green"
-            leftSection={<IconFileInvoice size={18} />}
-            onClick={generarPDF}
-          >
-            Generar solicitud
-          </Button>
+  mt="md"
+  color="gree"
+  radius="xl"
+  size="md"
+   variant="light"
+  fullWidth
+  leftSection={<IconFileInvoice size={18} />}
+  onClick={generarPDF}
+>
+  Generar solicitud
+</Button>
 
         </Card>
+ </Grid.Col>
 
+</Grid>
       </AppShell.Main>
     </AppShell>
   );

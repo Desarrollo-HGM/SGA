@@ -1,7 +1,7 @@
 /* MODELOS */
 
 export interface Insumo {
- id: number;
+  id: number;
   clave: string;
   insumo: string;
   tipo_insumo: string;
@@ -12,9 +12,15 @@ export interface Insumo {
   stock: number;
   minimo: number;
   maximo: number;
+
 }
 
 export interface CartItem extends Insumo {
   cantidad: number;
   justificacion?: string;
+}
+
+export interface DatosPDF {
+  
+  cart: CartItem[];
 }
