@@ -12,9 +12,16 @@ export interface Insumo {
   stock: number;
   minimo: number;
   maximo: number;
+  loading?: boolean;
+
 }
 
 export interface CartItem extends Insumo {
   cantidad: number;
   justificacion?: string;
+}
+
+export interface DatosPDF {
+  
+  cart: CartItem[];
 }

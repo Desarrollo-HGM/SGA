@@ -8,7 +8,9 @@ import {
   Table,
   Button,
   Badge,
-  Switch
+  Switch,
+  Grid,
+  Stack
 } from "@mantine/core";
 import { IconBuildingHospital } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
@@ -29,13 +31,72 @@ import CryptoJS from "crypto-js";
 import type { CartItem, Insumo } from "../../types/global";
 
 /* INVENTARIO DEMO */
-
 const inventarioMock: Insumo[] = [
-  { id: 1, insumo: "Guantes", servicio: "Urgencias", subalmacen: "NEFROLOGÍA", lote: "L01", stock: 100, minimo: 50, maximo: 100 },
-  { id: 2, insumo: "Cubrebocas", servicio: "Laboratorio", subalmacen: "NEFROLOGÍA", lote: "L02", stock: 80, minimo: 60, maximo: 120 },
-  { id: 3, insumo: "Jeringas", servicio: "Enfermería", subalmacen: "NEFROLOGÍA", lote: "L03", stock: 50, minimo: 30, maximo: 60 },
-  { id: 4, insumo: "Gasas", servicio: "Hospitalización", subalmacen: "NEFROLOGÍA", lote: "L04", stock: 120, minimo: 95, maximo: 190 },
-  { id: 5, insumo: "Alcohol", servicio: "Quirófano", subalmacen: "NEFROLOGÍA", lote: "L05", stock: 60, minimo: 70, maximo: 140 }
+  {
+    id: 1,
+    clave: "INS-001",
+    insumo: "Guantes",
+    tipo_insumo: "Material de curación",
+    unidad_distribucion: "Caja",
+    servicio: "Urgencias",
+    subalmacen: "NEFROLOGÍA",
+    lote: "L01",
+    stock: 100,
+    minimo: 50,
+    maximo: 100
+  },
+  {
+    id: 2,
+    clave: "INS-002",
+    insumo: "Cubrebocas",
+    tipo_insumo: "Equipo de protección",
+    unidad_distribucion: "Caja",
+    servicio: "Laboratorio",
+    subalmacen: "NEFROLOGÍA",
+    lote: "L02",
+    stock: 80,
+    minimo: 60,
+    maximo: 120
+  },
+  {
+    id: 3,
+    clave: "INS-003",
+    insumo: "Jeringas",
+    tipo_insumo: "Material médico",
+    unidad_distribucion: "Paquete",
+    servicio: "Enfermería",
+    subalmacen: "NEFROLOGÍA",
+    lote: "L03",
+    stock: 50,
+    minimo: 30,
+    maximo: 60
+  },
+  {
+    id: 4,
+    clave: "INS-004",
+    insumo: "Gasas",
+    tipo_insumo: "Material de curación",
+    unidad_distribucion: "Paquete",
+    servicio: "Hospitalización",
+    subalmacen: "NEFROLOGÍA",
+    lote: "L04",
+    stock: 120,
+    minimo: 95,
+    maximo: 190
+  },
+  {
+    id: 5,
+    clave: "INS-005",
+    insumo: "Alcohol",
+    tipo_insumo: "Antiséptico",
+    unidad_distribucion: "Frasco",
+    servicio: "Quirófano",
+    subalmacen: "NEFROLOGÍA",
+    lote: "L05",
+    stock: 60,
+    minimo: 70,
+    maximo: 140
+  }
 ];
 
 /* COMPONENTE */
@@ -155,7 +216,7 @@ export default function SolicitudesDashboard() {
 
      /* LOGO */
 
-    doc.addImage(logo, "PNG", 10, 5, 25, 20);
+    doc.addImage(logo, "PNG", 10, 10, 25, 20);
     doc.setFontSize(16);
     doc.text("Solicitud de Insumos", 65, 20);
 
@@ -328,9 +389,21 @@ export default function SolicitudesDashboard() {
           style={{ width: 300 }}
         />
 
+
+
+
+<Grid>
+
+  {/* INVENTARIO */}
+  <Grid.Col span={{ base: 12, md: 8 }}>
+
+
         {/* INVENTARIO */}
 
         {Object.entries(agrupados).map(([sub, items]: any) => (
+
+
+
 
           <Card
   key={sub}
@@ -369,176 +442,278 @@ export default function SolicitudesDashboard() {
 
     records={items}
 
-    columns={[
+   columns={[
 
-      {
-        accessor: "insumo",
-        title: "Insumo"
-      },
+  {
+    accessor: "clave",
+    title: "Clave"
+  },
 
-      {
-        accessor: "servicio",
-        title: "Servicio"
-      },
+  {
+    accessor: "insumo",
+    title: "Insumo"
+  },
 
-      {
-        accessor: "stock",
-        title: "Stock",
-        render: (r:any)=>(
-          <Badge
-            color={
-              r.stock <= r.minimo
-                ? "red"
-                : r.stock <= r.minimo + 20
-                ? "yellow"
-                : "green"
-            }
-            variant="light"
-          >
-            {r.stock}
-          </Badge>
-        )
-      },
+  {
+    accessor: "tipo_insumo",
+    title: "Tipo"
+  },
 
-      {
-        accessor: "minimo",
-        title: "Min"
-      },
+  {
+    accessor: "unidad_distribucion",
+    title: "Unidad"
+  },
 
-      {
-        accessor: "maximo",
-        title: "Max"
-      },
+  {
+    accessor: "servicio",
+    title: "Servicio"
+  },
 
-      {
-        accessor: "accion",
-        title: "Solicitud",
-        textAlign:"center",
+  {
+    accessor: "subalmacen",
+    title: "Subalmacén"
+  },
 
-        render: (record:any)=>(
-          <Button
-            size="xs"
-            radius="xl"
-            color="teal"
-            leftSection={<IconPlus size={14}/>}
-            onClick={()=>addToCart(record)}
-          >
-            Solicitar
-          </Button>
-        )
-      }
+  {
+    accessor: "lote",
+    title: "Lote"
+  },
 
-    ]}
+  {
+    accessor: "stock",
+    title: "Stock",
+    render: (r:any)=>(
+
+      <Badge
+        color={
+          r.stock <= r.minimo
+            ? "red"
+            : r.stock <= r.minimo + 20
+            ? "yellow"
+            : "green"
+        }
+        variant="light"
+      >
+        {r.stock}
+      </Badge>
+
+    )
+  },
+
+  {
+    accessor: "minimo",
+    title: "Min"
+  },
+
+  {
+    accessor: "maximo",
+    title: "Max"
+  },
+
+  {
+    accessor: "accion",
+    title: "Solicitud",
+    textAlign:"center",
+
+    render: (record:any)=>(
+
+      <Button
+        size="xs"
+        radius="xl"
+        color="teal"
+        leftSection={<IconPlus size={14}/>}
+        onClick={()=>addToCart(record)}
+      >
+        Solicitar
+      </Button>
+
+    )
+  }
+
+]}
   />
 
 </Card>
 
         ))}
 
-        {/* CARRITO */}
+</Grid.Col>
 
-        <Card withBorder mt="xl">
+
+        {/* CARRITO */}
+  <Grid.Col span={{ base: 12, md: 4 }}>
+        <Card   
+  withBorder
+  radius="md"
+  shadow="sm"
+  mt="md"
+  style={{
+    borderLeft: "6px solid #0b6fa4",
+    background: "#f8fbfd"
+  }}>
 
           <Text fw={700}>
             Carrito de solicitud
           </Text>
 
-          <Table striped highlightOnHover>
-            <thead className="table-head">
-
-              <tr>
-
-                <th style={{ textAlign: "center" }}>Insumo</th>
-                <th style={{ textAlign: "center" }}>Cantidad</th>
-                <th style={{ textAlign: "center" }}>Justificación</th>
-                <th style={{ textAlign: "center" }}>Acción</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {cart.map(item => (
-
-          
-
-
-
-
-                <tr key={item.id}>
-
-                  <td style={{ textAlign: "center" }}>
-                    {item.insumo}
-                  </td>
-
-                  <td style={{ textAlign: "center" }}>
-                    <TextInput
-                      type="number"
-                      value={item.cantidad}
-                      style={{ width: 80, margin: "auto" }}
-                      onChange={(e) =>
-                        updateCantidad(item.id, Number(e.currentTarget.value))
-                      }
-                    />
-                  </td>
-
-                  <td style={{ textAlign: "center" }}>
-
-               {(item.stock + item.cantidad > item.maximo) && (
-  <>
-    <TextInput
-      placeholder={
-        item.cantidad > item.stock
-          ? `Stock disponible: ${item.stock}`
-          : `Máximo permitido: ${item.maximo}`
-      }
-      value={item.justificacion || ""}
-      onChange={(e) => {
-        setCart(cart.map(i =>
-          i.id === item.id
-            ? { ...i, justificacion: e.currentTarget.value }
-            : i
-        ));
+        <Table
+  
+  striped
+  highlightOnHover
+  verticalSpacing="sm"
+  horizontalSpacing="md"
+  style={{
+        textAlign: "center",
+        borderTopLeftRadius: "8px"
       }}
-    />
-  </>
-)}
+>
 
-                  </td>
+<thead style={{ backgroundColor: "#0b6fa4", color: "white" }}>
+  <tr>
+    <th
+      style={{
+        textAlign: "center",
+        borderTopLeftRadius: "8px"
+      }}
+    >
+      Insumo
+    </th>
 
-                  <td style={{ textAlign: "center" }}>
+    <th style={{ textAlign: "center", width: 110 }}>
+      Cantidad
+    </th>
 
-                    <Button
-                      size="xs"
-                      color="red"
-                      leftSection={<IconTrash size={14} />}
-                      onClick={() => removeFromCart(item.id)}
-                    >
-                      Eliminar
-                    </Button>
+    <th style={{ textAlign: "center" }}>
+      Justificación
+    </th>
 
-                  </td>
+    <th
+      style={{
+        textAlign: "center",
+        borderTopLeftRadius: "8px"
+      }}
+    >
+      Acción
+    </th>
+  </tr>
+</thead>
 
-                </tr>
+  <tbody>
 
-              ))}
+    {cart.map(item => {
 
-            </tbody>
+      const requiereJustificacion =
+        item.stock + item.cantidad > item.maximo || item.cantidad > item.stock;
 
-          </Table>
+      return (
+
+        <tr key={item.id}>
+
+          {/* INSUMO */}
+          <td style={{ textAlign: "center" }}>
+            <Text fw={500}>{item.insumo}</Text>
+          </td>
+
+          {/* CANTIDAD */}
+          <td style={{ textAlign: "center" }}>
+            <TextInput
+              type="number"
+              value={item.cantidad}
+              size="xs"
+              style={{ width: 80, margin: "auto" }}
+              onChange={(e) =>
+                updateCantidad(item.id, Number(e.currentTarget.value))
+              }
+            />
+          </td>
+
+          {/* JUSTIFICACION */}
+          <td style={{ textAlign: "center" }}>
+
+            {requiereJustificacion ? (
+
+              <Stack gap={4}>
+
+                <Badge
+                  color="orange"
+                  variant="light"
+                  radius="sm"
+                >
+                  Requiere justificación
+                </Badge>
+
+                <TextInput
+                  size="xs"
+                  placeholder={
+                    item.cantidad > item.stock
+                      ? `Stock disponible: ${item.stock}`
+                      : `Máximo permitido: ${item.maximo}`
+                  }
+                  value={item.justificacion || ""}
+                  onChange={(e) => {
+                    setCart(cart.map(i =>
+                      i.id === item.id
+                        ? { ...i, justificacion: e.currentTarget.value }
+                        : i
+                    ));
+                  }}
+                />
+
+              </Stack>
+
+            ) : (
+
+              <Badge color="green" variant="light">
+                OK
+              </Badge>
+
+            )}
+
+          </td>
+
+          {/* ACCION */}
+          <td style={{ textAlign: "center" }}>
+
+            <Button
+              size="xs"
+              color="red"
+              variant="light"
+              radius="xl"
+              leftSection={<IconTrash size={14} />}
+              onClick={() => removeFromCart(item.id)}
+            >
+              Eliminar
+            </Button>
+
+          </td>
+
+        </tr>
+
+      );
+
+    })}
+
+  </tbody>
+
+</Table>
 
           <Button
-            mt="md"
-            color="green"
-            leftSection={<IconFileInvoice size={18} />}
-            onClick={generarPDF}
-          >
-            Generar solicitud
-          </Button>
+  mt="md"
+  color="gree"
+  radius="xl"
+  size="md"
+   variant="light"
+  fullWidth
+  leftSection={<IconFileInvoice size={18} />}
+  onClick={generarPDF}
+>
+  Generar solicitud
+</Button>
 
         </Card>
+ </Grid.Col>
 
+</Grid>
       </AppShell.Main>
     </AppShell>
   );
