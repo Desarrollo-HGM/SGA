@@ -5,17 +5,20 @@ import {
   Text,
   Indicator,
   Grid,
-  Drawer
+  Drawer,
+ThemeIcon,
+
+Box
 } from "@mantine/core";
 
 import { IconPackages } from "@tabler/icons-react";
+import { IconPackage, IconShoppingCart } from "@tabler/icons-react";
 
 
-import BuscadorInsumos from "../components/solicitud/BuscadorInsumos";
 import InventarioTable from "../components/solicitud/InventarioTable";
 import CarritoSolicitud from "../components/solicitud/CarritoSolicitud";
 
-import { inventarioMock } from "../components/solicitud/inventarioMock";
+import { useInventario } from "../hooks/useInventario";
 import { generarPDF } from "../js/generarPDF";
 
 import type { CartItem, Insumo } from "../types/global";
@@ -29,7 +32,7 @@ export default function SolicitudesDashboard() {
   const [solicitados, setSolicitados] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
+   const { data, loading, error } = useInventario();
 
   
 
@@ -45,15 +48,15 @@ export default function SolicitudesDashboard() {
      FILTRO
   =============================== */
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
+const filtered = useMemo(() => {
+  const q = search.toLowerCase();
 
-    return inventarioMock.filter(i =>
-      i.insumo.toLowerCase().includes(q) ||
-      i.servicio.toLowerCase().includes(q) ||
-      i.subalmacen.toLowerCase().includes(q)
-    );
-  }, [search]);
+  return data.filter(i =>
+    i.insumo.toLowerCase().includes(q) ||
+    i.servicio.toLowerCase().includes(q) ||
+    i.subalmacen.toLowerCase().includes(q)
+  );
+}, [search, data]);
 
   /* ===============================
      ✅ FIX REAL AQUÍ
@@ -174,51 +177,121 @@ const handleGenerarPDF = async () => {
 
  
 
-        <BuscadorInsumos
-          search={search}
-          setSearch={setSearch}
-        />
-
         <Grid>
           <Grid.Col span={12}>
             <InventarioTable
-              data={filtered}
-              addToCart={addToCart}
-                cart={cart} // 🔥 NUEVO
-            />
-          </Grid.Col>
+  data={filtered}
+  addToCart={addToCart}
+  cart={cart}
+  loading={loading} // 🔥 IMPORTANTE
+/>
+
+{error && (
+  <Text c="red" ta="center" mb="sm">
+    {error}
+  </Text>
+)}          </Grid.Col>
         </Grid>
 
-        <Drawer
-          opened={openedCart}
-          onClose={() => setOpenedCart(false)}
-          position="bottom"
-          size="60%"
-          padding="md"
-          overlayProps={{ blur: 3 }}
+     
+
+<Drawer
+  opened={openedCart}
+  onClose={() => setOpenedCart(false)}
+  position="bottom"
+  size="65%"
+  padding="0"
+  radius="xl"
+  overlayProps={{ blur: 4, opacity: 0.55 }}
+  styles={{
+    content: {
+      backgroundColor: "#f4f6f8",
+    },
+    body: {
+      padding: 0,
+    },
+  }}
+>
+  {/* HEADER */}
+  <Box
+    px="md"
+    py="sm"
+    style={{
+      borderBottom: "1px solid #e0e0e0",
+      backgroundColor: "#ffffff",
+    }}
+  >
+    <Group justify="space-between">
+      <Group gap="xs">
+        <ThemeIcon size="lg" radius="xl" variant="light" color="blue">
+          <IconPackage size={20} />
+        </ThemeIcon>
+
+        <div>
+          <Text fw={600}>Solicitud</Text>
+          <Text size="xs" c="dimmed">
+            Insumos seleccionados
+          </Text>
+        </div>
+      </Group>
+
+      <ThemeIcon variant="light" color="gray" radius="xl">
+         <IconPackages size={18} />
+      </ThemeIcon>
+    </Group>
+  </Box>
+
+  {/* CONTENIDO */}
+  <Box
+    p="md"
+    style={{
+      maxHeight: "65vh",
+      overflowY: "auto",
+    }}
+  >
+    {cart.length === 0 ? (
+      <Box
+        style={{
+          textAlign: "center",
+          padding: "40px 20px",
+          borderRadius: "12px",
+          backgroundColor: "#ffffff",
+          border: "1px dashed #d0d5dd",
+        }}
+      >
+        <ThemeIcon
+          size={60}
+          radius="xl"
+          variant="light"
+          color="gray"
+          mb="sm"
         >
+            <IconPackages size={18} />
+        </ThemeIcon>
 
-          {cart.length === 0 ? (
+        <Text fw={500} mb={4}>
+          No hay insumos agregados!!
+        </Text>
 
-            <Text ta="center" mt="xl" c="dimmed">
-              Agrega insumos al carrito
-            </Text>
-
-          ) : (
-
-            <CarritoSolicitud
-              cart={cart}
-              setCart={setCart}
-              removeFromCart={removeFromCart}
-              updateCantidad={updateCantidad}
-              generarPDF={handleGenerarPDF}
-              isSubmitting={isSubmitting}
-              isSubmitted={isSubmitted}
-            />
-
-          )}
-
-        </Drawer>
+        <Text size="sm" c="dimmed">
+          Agrega insumos desde el inventario para generar una solicitud
+        </Text>
+      </Box>
+    ) : (
+      <>
+        <CarritoSolicitud
+          cart={cart}
+          setCart={setCart}
+          removeFromCart={removeFromCart}
+          updateCantidad={updateCantidad}
+          generarPDF={handleGenerarPDF}
+          isSubmitting={isSubmitting}
+          isSubmitted={isSubmitted}
+        />
+      </>
+    )}
+  </Box>
+</Drawer>
 
       </AppShell.Main>
 

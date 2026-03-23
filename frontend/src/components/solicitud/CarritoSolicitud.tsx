@@ -49,11 +49,7 @@ export default function CarritoSolicitud({
       }}
     >
 
-      {/* TITULO */}
-      <Text fw={700} mb="sm">
-        Carrito de solicitud
-      </Text>
-
+      
       {/* TABLA */}
 
       <Table
