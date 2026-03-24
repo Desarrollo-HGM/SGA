@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   Badge,
   Card,
@@ -8,7 +8,8 @@ import {
   Grid,
   ScrollArea,
   Center,
-  Loader
+  Loader,
+  Code
 } from "@mantine/core";
 
 import BotonAccion from "../botones/BotonAccion";
@@ -20,8 +21,12 @@ import type { Insumo, CartItem } from "../../types/global";
 interface Props {
   data: Insumo[];
   addToCart: (item: Insumo) => void;
+  removeFromCart: (id: number) => void;
   cart: CartItem[];
   loading?: boolean;
+
+  onScan: (codigo: string) => void; // 🔥 nuevo
+  highlightId?: number;             // 🔥 nuevo
 }
 
 const PAGE_SIZE = 10;
@@ -29,37 +34,42 @@ const PAGE_SIZE = 10;
 export default function InventarioTable({
   data,
   addToCart,
+  removeFromCart,
   cart,
   loading = false,
+  onScan,
+  highlightId
 }: Props) {
 
-  /* 🔥 FILTROS */
   const [filters, setFilters] = useState({
     clave: "",
     insumo: "",
     tipo: "",
     unidad: "",
     servicio: "",
-    subalmacen: ""
+    subalmacen: "",
+    codigo_barras: ""
   });
 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const barcodeRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    barcodeRef.current?.focus(); // 🔥 autofocus inicial
+  }, []);
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters((prev) => ({
       ...prev,
       [field]: value
     }));
-
     setVisibleCount(PAGE_SIZE);
   };
 
-  /* 🔍 NORMALIZADOR SEGURO */
   const normalize = (value: any) =>
     (value ?? "").toString().toLowerCase().trim();
 
-  /* 🔍 FILTRADO */
   const filteredData = useMemo(() => {
     return data.filter((item) => (
       normalize(item.clave).includes(normalize(filters.clave)) &&
@@ -67,16 +77,15 @@ export default function InventarioTable({
       normalize(item.tipo_insumo).includes(normalize(filters.tipo)) &&
       normalize(item.unidad_distribucion).includes(normalize(filters.unidad)) &&
       normalize(item.servicio).includes(normalize(filters.servicio)) &&
-      normalize(item.subalmacen).includes(normalize(filters.subalmacen))
+      normalize(item.subalmacen).includes(normalize(filters.subalmacen)) &&
+      normalize(item.codigo_barras || "").includes(normalize(filters.codigo_barras))
     ));
   }, [filters, data]);
 
-  /* 📦 DATA VISIBLE */
   const visibleData = useMemo(() => {
     return filteredData.slice(0, visibleCount);
   }, [filteredData, visibleCount]);
 
-  /* 🔥 SCROLL INFINITO */
   const handleScroll = () => {
     const viewport = viewportRef.current;
     if (!viewport) return;
@@ -165,7 +174,26 @@ export default function InventarioTable({
         </Grid.Col>
       </Grid>
 
-      {/* 🔥 SCROLL AREA */}
+      {/* 🔥 SCANNER */}
+      <TextInput
+        ref={barcodeRef}
+        placeholder="Escanea código de barras..."
+        value={filters.codigo_barras}
+        onChange={(e) => handleFilterChange("codigo_barras", e.currentTarget.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onScan(filters.codigo_barras);
+
+            handleFilterChange("codigo_barras", "");
+
+            setTimeout(() => {
+              barcodeRef.current?.focus();
+            }, 100);
+          }
+        }}
+      />
+
+      {/* TABLA */}
       <ScrollArea
         h={500}
         viewportRef={viewportRef}
@@ -181,10 +209,15 @@ export default function InventarioTable({
             withTableBorder
             highlightOnHover
             striped
-            records={visibleData} // ✅ FIX CLAVE
+            records={visibleData}
             idAccessor="id"
             className="tabla-inventario"
             noRecordsText="No hay insumos disponibles"
+
+            rowClassName={(record: Insumo) =>
+              record.id === highlightId ? "row-highlight" : ""
+            }
+
             columns={[
               { accessor: "clave", title: "Clave" },
               { accessor: "insumo", title: "Insumo" },
@@ -197,31 +230,37 @@ export default function InventarioTable({
                 accessor: "stock",
                 title: "Stock",
                 textAlign: "center",
+                render: (r: Insumo) => {
+                  let color = "green";
+                  let label = "OK";
+
+                  if (r.stock <= r.minimo) {
+                    color = "red";
+                    label = "Bajo";
+                  } else if (r.stock <= r.minimo + 20) {
+                    color = "yellow";
+                    label = "Medio";
+                  }
+
+                  return (
+                    <Badge color={color} variant="light">
+                      {r.stock} • {label}
+                    </Badge>
+                  );
+                }
+              },
+
+              { accessor: "minimo", title: "Min", textAlign: "center" },
+              { accessor: "maximo", title: "Max", textAlign: "center" },
+
+              {
+                accessor: "codigo_barras",
+                title: "Código",
                 render: (r: Insumo) => (
-                  <Badge
-                    variant="light"
-                    color={
-                      r.stock <= r.minimo
-                        ? "red"
-                        : r.stock <= r.minimo + 20
-                        ? "yellow"
-                        : "green"
-                    }
-                  >
-                    {r.stock}
-                  </Badge>
+                  <Code fw={700}>{r.codigo_barras || "—"}</Code>
                 )
               },
-              {
-                accessor: "minimo",
-                title: "Min",
-                textAlign: "center"
-              },
-              {
-                accessor: "maximo",
-                title: "Max",
-                textAlign: "center"
-              },
+
               {
                 accessor: "accion",
                 title: "Acción",
@@ -231,15 +270,14 @@ export default function InventarioTable({
                     record={record}
                     cart={cart}
                     addToCart={addToCart}
+                    removeFromCart={removeFromCart}
                   />
                 )
               }
             ]}
           />
         )}
-
       </ScrollArea>
-
     </Card>
   );
 }

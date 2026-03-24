@@ -12,6 +12,7 @@ export interface Insumo {
   stock: number;
   minimo: number;
   maximo: number;
+  codigo_barras?: string; 
   loading?: boolean;
 
 }
