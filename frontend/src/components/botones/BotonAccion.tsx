@@ -63,10 +63,11 @@ export default function BotonAccion({
       size="xs"
       radius="md"
       color={color}
-      variant={variant}
+     
       leftSection={icon}
       onClick={handleClick}
       disabled={sinStock}
+       variant="light"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{

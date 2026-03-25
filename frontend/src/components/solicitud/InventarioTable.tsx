@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import {
   Badge,
   Card,
@@ -24,9 +24,8 @@ interface Props {
   removeFromCart: (id: number) => void;
   cart: CartItem[];
   loading?: boolean;
-
-  onScan: (codigo: string) => void; // 🔥 nuevo
-  highlightId?: number;             // 🔥 nuevo
+  highlightId?: number;
+  changedIds?: number[]; // 🔥 filas cambiadas
 }
 
 const PAGE_SIZE = 10;
@@ -37,8 +36,8 @@ export default function InventarioTable({
   removeFromCart,
   cart,
   loading = false,
-  onScan,
-  highlightId
+  highlightId,
+  changedIds = []
 }: Props) {
 
   const [filters, setFilters] = useState({
@@ -48,162 +47,67 @@ export default function InventarioTable({
     unidad: "",
     servicio: "",
     subalmacen: "",
-    codigo_barras: ""
   });
 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const viewportRef = useRef<HTMLDivElement>(null);
-  const barcodeRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    barcodeRef.current?.focus(); // 🔥 autofocus inicial
-  }, []);
 
   const handleFilterChange = (field: string, value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      [field]: value
-    }));
+    setFilters(prev => ({ ...prev, [field]: value }));
     setVisibleCount(PAGE_SIZE);
   };
 
-  const normalize = (value: any) =>
-    (value ?? "").toString().toLowerCase().trim();
+  const normalize = (value: any) => (value ?? "").toString().toLowerCase().trim();
 
   const filteredData = useMemo(() => {
-    return data.filter((item) => (
+    return data.filter(item => 
       normalize(item.clave).includes(normalize(filters.clave)) &&
       normalize(item.insumo).includes(normalize(filters.insumo)) &&
       normalize(item.tipo_insumo).includes(normalize(filters.tipo)) &&
       normalize(item.unidad_distribucion).includes(normalize(filters.unidad)) &&
       normalize(item.servicio).includes(normalize(filters.servicio)) &&
-      normalize(item.subalmacen).includes(normalize(filters.subalmacen)) &&
-      normalize(item.codigo_barras || "").includes(normalize(filters.codigo_barras))
-    ));
-  }, [filters, data]);
+      normalize(item.subalmacen).includes(normalize(filters.subalmacen))
+    );
+  }, [data, filters]);
 
-  const visibleData = useMemo(() => {
-    return filteredData.slice(0, visibleCount);
-  }, [filteredData, visibleCount]);
+  const visibleData = useMemo(() => filteredData.slice(0, visibleCount), [filteredData, visibleCount]);
 
   const handleScroll = () => {
     const viewport = viewportRef.current;
     if (!viewport) return;
 
     const { scrollTop, scrollHeight, clientHeight } = viewport;
-
     if (scrollTop + clientHeight >= scrollHeight - 50) {
-      setVisibleCount((prev) => prev + PAGE_SIZE);
+      setVisibleCount(prev => prev + PAGE_SIZE);
     }
   };
 
   return (
-    <Card
-      withBorder
-      radius="md"
-      shadow="sm"
-      mt="md"
-      style={{
-        borderLeft: "6px solid #0b6fa4",
-        background: "#f8fbfd"
-      }}
-    >
+    <Card withBorder radius="md" shadow="sm" mt="md" style={{ borderLeft: "6px solid #0b6fa4", background: "#f8fbfd" }}>
 
       {/* HEADER */}
       <Group justify="space-between" mb="sm">
         <Group>
           <IconBuildingHospital size={22} color="#0b6fa4" />
-          <Text fw={700} size="lg" c="#0b6fa4">
-            Inventario
-          </Text>
+          <Text fw={700} size="lg" c="#0b6fa4">Inventario</Text>
         </Group>
-
-        <Badge color="blue" variant="light">
-          {filteredData.length} insumos
-        </Badge>
+        <Badge color="blue" variant="light">{filteredData.length} insumos</Badge>
       </Group>
 
       {/* FILTROS */}
       <Grid mb="md">
-        <Grid.Col span={2}>
-          <TextInput
-            placeholder="Clave"
-            value={filters.clave}
-            onChange={(e) => handleFilterChange("clave", e.currentTarget.value)}
-          />
-        </Grid.Col>
-
-        <Grid.Col span={3}>
-          <TextInput
-            placeholder="Insumo"
-            value={filters.insumo}
-            onChange={(e) => handleFilterChange("insumo", e.currentTarget.value)}
-          />
-        </Grid.Col>
-
-        <Grid.Col span={2}>
-          <TextInput
-            placeholder="Tipo"
-            value={filters.tipo}
-            onChange={(e) => handleFilterChange("tipo", e.currentTarget.value)}
-          />
-        </Grid.Col>
-
-        <Grid.Col span={2}>
-          <TextInput
-            placeholder="Unidad"
-            value={filters.unidad}
-            onChange={(e) => handleFilterChange("unidad", e.currentTarget.value)}
-          />
-        </Grid.Col>
-
-        <Grid.Col span={2}>
-          <TextInput
-            placeholder="Servicio"
-            value={filters.servicio}
-            onChange={(e) => handleFilterChange("servicio", e.currentTarget.value)}
-          />
-        </Grid.Col>
-
-        <Grid.Col span={1}>
-          <TextInput
-            placeholder="Sub"
-            value={filters.subalmacen}
-            onChange={(e) => handleFilterChange("subalmacen", e.currentTarget.value)}
-          />
-        </Grid.Col>
+        <Grid.Col span={2}><TextInput placeholder="Clave" value={filters.clave} onChange={e => handleFilterChange("clave", e.currentTarget.value)} /></Grid.Col>
+        <Grid.Col span={3}><TextInput placeholder="Insumo" value={filters.insumo} onChange={e => handleFilterChange("insumo", e.currentTarget.value)} /></Grid.Col>
+        <Grid.Col span={2}><TextInput placeholder="Tipo" value={filters.tipo} onChange={e => handleFilterChange("tipo", e.currentTarget.value)} /></Grid.Col>
+        <Grid.Col span={2}><TextInput placeholder="Unidad" value={filters.unidad} onChange={e => handleFilterChange("unidad", e.currentTarget.value)} /></Grid.Col>
+        <Grid.Col span={2}><TextInput placeholder="Servicio" value={filters.servicio} onChange={e => handleFilterChange("servicio", e.currentTarget.value)} /></Grid.Col>
+        <Grid.Col span={1}><TextInput placeholder="Sub" value={filters.subalmacen} onChange={e => handleFilterChange("subalmacen", e.currentTarget.value)} /></Grid.Col>
       </Grid>
 
-      {/* 🔥 SCANNER */}
-      <TextInput
-        ref={barcodeRef}
-        placeholder="Escanea código de barras..."
-        value={filters.codigo_barras}
-        onChange={(e) => handleFilterChange("codigo_barras", e.currentTarget.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            onScan(filters.codigo_barras);
-
-            handleFilterChange("codigo_barras", "");
-
-            setTimeout(() => {
-              barcodeRef.current?.focus();
-            }, 100);
-          }
-        }}
-      />
-
       {/* TABLA */}
-      <ScrollArea
-        h={500}
-        viewportRef={viewportRef}
-        onScrollPositionChange={handleScroll}
-      >
-
+      <ScrollArea h={500} viewportRef={viewportRef} onScrollPositionChange={handleScroll}>
         {loading ? (
-          <Center h={300}>
-            <Loader />
-          </Center>
+          <Center h={300}><Loader /></Center>
         ) : (
           <DataTable
             withTableBorder
@@ -214,9 +118,11 @@ export default function InventarioTable({
             className="tabla-inventario"
             noRecordsText="No hay insumos disponibles"
 
-            rowClassName={(record: Insumo) =>
-              record.id === highlightId ? "row-highlight" : ""
-            }
+            rowClassName={(record: Insumo) => {
+              if (record.id === highlightId) return "row-highlight";
+              if (changedIds.includes(record.id)) return "row-changed"; // 🔥 filas cambiadas
+              return "";
+            }}
 
             columns={[
               { accessor: "clave", title: "Clave" },
@@ -233,33 +139,16 @@ export default function InventarioTable({
                 render: (r: Insumo) => {
                   let color = "green";
                   let label = "OK";
-
-                  if (r.stock <= r.minimo) {
-                    color = "red";
-                    label = "Bajo";
-                  } else if (r.stock <= r.minimo + 20) {
-                    color = "yellow";
-                    label = "Medio";
-                  }
-
-                  return (
-                    <Badge color={color} variant="light">
-                      {r.stock} • {label}
-                    </Badge>
-                  );
+                  if (r.stock <= r.minimo) { color = "red"; label = "Bajo"; }
+                  else if (r.stock <= r.minimo + 20) { color = "yellow"; label = "Medio"; }
+                  return <Badge color={color} variant="light">{r.stock} • {label}</Badge>;
                 }
               },
 
               { accessor: "minimo", title: "Min", textAlign: "center" },
               { accessor: "maximo", title: "Max", textAlign: "center" },
 
-              {
-                accessor: "codigo_barras",
-                title: "Código",
-                render: (r: Insumo) => (
-                  <Code fw={700}>{r.codigo_barras || "—"}</Code>
-                )
-              },
+              { accessor: "codigo_barras", title: "Código", render: (r: Insumo) => <Code fw={700}>{r.codigo_barras || "—"}</Code> },
 
               {
                 accessor: "accion",

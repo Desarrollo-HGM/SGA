@@ -1,0 +1,17 @@
+/* Fila resaltada temporal (highlightId) */
+.row-highlight {
+  background-color: #d0f0fd !important; /* azul clarito */
+  transition: background-color 0.5s ease;
+}
+
+/* Fila que cambió (changedIds) */
+.row-changed {
+  animation: highlight-change 1s ease-in-out;
+}
+
+/* Animación para parpadeo de cambio */
+@keyframes highlight-change {
+  0% { background-color: #fff3cd; }   /* amarillo claro */
+  50% { background-color: #ffeeba; }  /* amarillo medio */
+  100% { background-color: #fff3cd; } /* amarillo claro */
+}

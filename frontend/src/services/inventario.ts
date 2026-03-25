@@ -6,7 +6,7 @@ export const getInventario = async (): Promise<Insumo[]> => {
 
   const data = res.data.data || res.data;
 
-  // 🔥 Garantiza que cumpla tu tipo
+  
   return data.map((item: any): Insumo => ({
   id: Number(item.id),
   clave: item.clave ?? "",
@@ -21,3 +21,4 @@ export const getInventario = async (): Promise<Insumo[]> => {
   maximo: Number(item.maximo ?? 0),
 }));
 };
+
