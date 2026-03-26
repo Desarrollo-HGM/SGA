@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo } from "react";
 import {
   AppShell,
   Group,
@@ -14,18 +14,15 @@ import {
 import {
   IconPackages,
   IconX,
-  IconCheck,
-  IconBell
+  IconCheck
 } from "@tabler/icons-react";
 
 import InventarioTable from "../components/solicitud/InventarioTable";
 import CarritoSolicitud from "../components/solicitud/CarritoSolicitud";
-import CampanaSolicitudes from "../components/campana/CampanaSolicitudes";
+
 
 import { useInventario } from "../hooks/useInventario";
 import { generarPDF } from "../utils/generarPDF";
-import { getSolicitudes } from "../services/solicitudes";
-import type { Solicitud } from "../services/solicitudes";
 import type { CartItem, Insumo } from "../types/global";
 
 export default function SolicitudesDashboard() {
@@ -33,42 +30,11 @@ export default function SolicitudesDashboard() {
   const [search] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [openedCart, setOpenedCart] = useState(false);
-  const [openedCampana, setOpenedCampana] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const { data, loading, error, changedIds } = useInventario();
-
-  /* 🔔 SOLICITUDES */
-  const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
-  const prevCountRef = useRef(0);
-
-  /* ===============================
-     🔔 FETCH SOLICITUDES
-  =============================== */
-  useEffect(() => {
-    const fetch = async () => {
-      const data = await getSolicitudes();
-      const sorted = data.sort((a, b) =>
-        new Date(b.fecha_solicitud).getTime() -
-        new Date(a.fecha_solicitud).getTime()
-      );
-      setSolicitudes(sorted);
-    };
-
-    fetch();
-    const interval = setInterval(fetch, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
-  /* 🔊 NUEVAS NOTIFICACIONES */
-  useEffect(() => {
-    if (solicitudes.length > prevCountRef.current) {
-      new Audio("/beep.mp3").play().catch(() => {});
-    }
-    prevCountRef.current = solicitudes.length;
-  }, [solicitudes]);
 
   /* ===============================
      FILTRO
@@ -88,15 +54,20 @@ export default function SolicitudesDashboard() {
   const addToCart = (item: Insumo) => {
     setCart(prev => {
       const exist = prev.find(i => i.id === item.id);
+
       if (exist) {
         if (exist.cantidad >= item.stock) {
           alert("Stock insuficiente");
           return prev;
         }
+
         return prev.map(i =>
-          i.id === item.id ? { ...i, cantidad: i.cantidad + 1 } : i
+          i.id === item.id
+            ? { ...i, cantidad: i.cantidad + 1 }
+            : i
         );
       }
+
       return [...prev, { ...item, cantidad: 1 }];
     });
   };
@@ -107,8 +78,11 @@ export default function SolicitudesDashboard() {
 
   const updateCantidad = (id: number, val: number) => {
     if (val <= 0) return;
+
     setCart(prev =>
-      prev.map(i => i.id === id ? { ...i, cantidad: val } : i)
+      prev.map(i =>
+        i.id === id ? { ...i, cantidad: val } : i
+      )
     );
   };
 
@@ -117,11 +91,14 @@ export default function SolicitudesDashboard() {
   =============================== */
   const handleGenerarPDF = async () => {
     if (cart.length === 0) return;
+
     setIsSubmitting(true);
     const result = await generarPDF({ cart });
     setIsSubmitting(false);
+
     if (result) {
       setIsSubmitted(true);
+
       setTimeout(() => {
         setCart([]);
         setOpenedCart(false);
@@ -137,20 +114,9 @@ export default function SolicitudesDashboard() {
         {/* 🔝 HEADER */}
         <Group justify="apart" mb="lg">
           <Text fw={700} size="xl">Dashboard</Text>
+
           <Group>
-            {/* 🔔 CAMPANA */}
-            <Indicator
-              inline
-              label={solicitudes.length || undefined}
-              size={16}
-              color="orange"
-            >
-              <IconBell
-                size={28}
-                style={{ cursor: "pointer" }}
-                onClick={() => setOpenedCampana(true)}
-              />
-            </Indicator>
+        
 
             {/* 🛒 CARRITO */}
             <Indicator
@@ -178,9 +144,14 @@ export default function SolicitudesDashboard() {
               removeFromCart={removeFromCart}
               cart={cart}
               loading={loading}
-              changedIds={changedIds} // 🔥 filas que cambiaron se resaltan
+              changedIds={changedIds}
             />
-            {error && <Text c="red" ta="center">{error}</Text>}
+
+            {error && (
+              <Text c="red" ta="center">
+                {error}
+              </Text>
+            )}
           </Grid.Col>
         </Grid>
 
@@ -218,6 +189,7 @@ export default function SolicitudesDashboard() {
               <ThemeIcon size={60} radius="xl" variant="light" color="gray">
                 <IconPackages size={30} />
               </ThemeIcon>
+
               <Text c="dimmed" fw={500}>
                 ¡Agregar insumos para generar una solicitud!
               </Text>
@@ -239,51 +211,12 @@ export default function SolicitudesDashboard() {
               <ThemeIcon color="green" radius="xl" size="lg">
                 <IconCheck size={18} />
               </ThemeIcon>
-              <Text c="green" fw={600}>Solicitud generada correctamente</Text>
+
+              <Text c="green" fw={600}>
+                Solicitud generada correctamente
+              </Text>
             </Group>
           )}
-        </Drawer>
-
-        {/* 🔔 DRAWER CAMPANA */}
-        <Drawer
-          opened={openedCampana}
-          onClose={() => setOpenedCampana(false)}
-          position="bottom"
-          size="65%"
-          radius="lg"
-          overlayProps={{ blur: 3 }}
-          withCloseButton={false}
-        >
-          <Group justify="space-between" mb="md">
-            <Group>
-              <ThemeIcon size="lg" radius="xl" color="teal" variant="light">
-                <IconPackages size={20} />
-              </ThemeIcon>
-              <Text fw={700} size="lg">Nueva solicitud</Text>
-            </Group>
-
-            <ActionIcon
-              variant="light"
-              color="red"
-              size="lg"
-              radius="xl"
-              onClick={() => setOpenedCampana(false)}
-            >
-              <IconX size={18} />
-            </ActionIcon>
-          </Group>
-
-          {solicitudes.length === 0 ? (
-            <Stack align="center" justify="center" h={200}>
-              <ThemeIcon size={60} radius="xl" variant="light" color="gray">
-                <IconBell size={30} />
-              </ThemeIcon>
-              <Text c="dimmed" fw={500}>No hay solicitudes registradas</Text>
-            </Stack>
-          ) : (
-            <CampanaSolicitudes data={solicitudes} />
-          )}
-
         </Drawer>
 
       </AppShell.Main>

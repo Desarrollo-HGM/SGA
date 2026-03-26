@@ -141,6 +141,7 @@ export default function InventarioTable({
                   let label = "OK";
                   if (r.stock <= r.minimo) { color = "red"; label = "Bajo"; }
                   else if (r.stock <= r.minimo + 20) { color = "yellow"; label = "Medio"; }
+                   else if (r.stock > r.maximo + 20) { color = "orange"; label = "Sobre abasto!!!"; }
                   return <Badge color={color} variant="light">{r.stock} • {label}</Badge>;
                 }
               },

@@ -4,7 +4,8 @@ import {
   Card,
   Text,
   Badge,
-  Group
+  Group,
+  ScrollArea
 } from "@mantine/core";
 
 import { IconEye } from "@tabler/icons-react";
@@ -15,28 +16,25 @@ import type { Solicitud as SolicitudBase } from "../../services/solicitudes";
 
 /* ================= TIPOS ================= */
 
-interface Solicitud extends SolicitudBase {}
-
 interface Props {
-  data: Solicitud[];
+  data: SolicitudBase[];
 }
 
 /* ================= COMPONENTE ================= */
 
 export default function CampanaSolicitudes({ data }: Props) {
 
-  const [solicitudes] = useState<Solicitud[]>(data);
-
   const [modalDetalle, setModalDetalle] = useState(false);
   const [idSeleccionado, setIdSeleccionado] = useState<number | null>(null);
 
   /* ================= DETALLE ================= */
+
   const openDetalle = (id: number) => {
     setIdSeleccionado(id);
     setModalDetalle(true);
   };
 
-  /* ================= UI ================= */
+  /* ================= UTILS ================= */
 
   const getColor = (estado: string) => {
     switch (estado) {
@@ -46,6 +44,8 @@ export default function CampanaSolicitudes({ data }: Props) {
       default: return "gray";
     }
   };
+
+  /* ================= UI ================= */
 
   return (
     <Card
@@ -59,60 +59,73 @@ export default function CampanaSolicitudes({ data }: Props) {
       }}
     >
 
-      <Table striped highlightOnHover>
-        <thead style={{ backgroundColor: "#0b6fa4", color: "white" }}>
-          <tr>
-            <th style={{ textAlign: "center" }}>ID</th>
-            <th style={{ textAlign: "center" }}>Servicio</th>
-            <th style={{ textAlign: "center" }}>Subalmacén</th>
-            <th style={{ textAlign: "center" }}>Estado</th>
-            <th style={{ textAlign: "center" }}>Acciones</th>
-          </tr>
-        </thead>
+      {/* 🔥 SCROLL para muchas solicitudes */}
+      <ScrollArea h={400}>
 
-        <tbody>
-          {solicitudes.length === 0 ? (
+        <Table striped highlightOnHover withTableBorder>
+          <thead style={{ backgroundColor: "#0b6fa4", color: "white" }}>
             <tr>
-              <td colSpan={5}>
-                <Text c="dimmed" ta="center">
-                  Sin solicitudes
-                </Text>
-              </td>
+              <th style={{ textAlign: "center" }}>ID</th>
+              <th style={{ textAlign: "center" }}>Servicio</th>
+              <th style={{ textAlign: "center" }}>Subalmacén</th>
+              <th style={{ textAlign: "center" }}>Estado</th>
+              <th style={{ textAlign: "center" }}>Acciones</th>
             </tr>
-          ) : (
-            solicitudes.map(sol => (
-              <tr key={sol.id_solicitud}>
-                <td style={{ textAlign: "center" }}>{sol.id_solicitud}</td>
-                <td style={{ textAlign: "center" }}>{sol.servicio}</td>
-                <td style={{ textAlign: "center" }}>{sol.subalmacen}</td>
+          </thead>
 
-                <td style={{ textAlign: "center" }}>
-                  <Badge color={getColor(sol.estado)} variant="light">
-                    {sol.estado.toUpperCase()}
-                  </Badge>
-                </td>
-
-                <td style={{ textAlign: "center" }}>
-                  <Group justify="center">
-                    <Button
-                      size="xs"
-                      radius="xl"
-                      variant="light"
-                      color="blue"
-                      leftSection={<IconEye size={14} />}
-                      onClick={() => openDetalle(sol.id_solicitud)}
-                    >
-                      Detalle
-                    </Button>
-                  </Group>
+          <tbody>
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan={5}>
+                  <Text c="dimmed" ta="center">
+                    Sin solicitudes
+                  </Text>
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </Table>
+            ) : (
+              data.map((sol) => (
+                <tr key={sol.id_solicitud}>
+                  <td style={{ textAlign: "center" }}>
+                    {sol.id_solicitud}
+                  </td>
 
-      {/* 🔥 MODAL REUTILIZABLE */}
+                  <td style={{ textAlign: "center" }}>
+                    {sol.servicio}
+                  </td>
+
+                  <td style={{ textAlign: "center" }}>
+                    {sol.subalmacen}
+                  </td>
+
+                  <td style={{ textAlign: "center" }}>
+                    <Badge color={getColor(sol.estado)} variant="light">
+                      {sol.estado.toUpperCase()}
+                    </Badge>
+                  </td>
+
+                  <td style={{ textAlign: "center" }}>
+                    <Group justify="center">
+                      <Button
+                        size="xs"
+                        radius="xl"
+                        variant="light"
+                        color="blue"
+                        leftSection={<IconEye size={14} />}
+                        onClick={() => openDetalle(sol.id_solicitud)}
+                      >
+                        Detalle
+                      </Button>
+                    </Group>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </Table>
+
+      </ScrollArea>
+
+      {/* 🔥 MODAL */}
       <ModalDetalleSolicitud
         opened={modalDetalle}
         onClose={() => setModalDetalle(false)}
