@@ -1,77 +1,144 @@
 // src/repositories/solicitudesRepository.ts
-import { db } from "../config/db.js";
-import type { Solicitud } from "../models/solicitud.js";
-import { logger } from "../config/logger.js";
+import { db } from '../config/db.js';
+import { logger } from '../config/logger.js'; // Usamos tu logger para consistencia
+import type { Solicitud, SolicitudDetalle } from '../models/solicitud.js';
+import { format } from 'date-fns';
 
 export const solicitudesRepository = {
-  async create(solicitud: Solicitud) {
-    logger.debug("[SolicitudesRepository] Insertando solicitud en DB", { solicitud });
+  // Insertar cabecera de solicitud
+  async insertSolicitud(data: Partial<Solicitud>): Promise<number> {
     try {
-      const [id] = await db("solicitudes").insert(solicitud);
-      logger.info("[SolicitudesRepository] Solicitud creada", { id });
-      return { ...solicitud, id_solicitudes: id };
-    } catch (err: any) {
-      logger.error("[SolicitudesRepository] Error al crear solicitud", { error: err.message, solicitud });
-      throw err;
-    }
-  },
-
-  async findAll(filter?: { estado?: string; id_subalmacen?: number }) {
-    logger.debug("[SolicitudesRepository] Buscando solicitudes con filtro", { filter });
-    try {
-      let query = db<Solicitud>("solicitudes").select("*");
-      if (filter?.estado) query = query.where("estado", filter.estado);
-      if (filter?.id_subalmacen) query = query.where("id_subalmacen", filter.id_subalmacen);
-      const result = await query.orderBy("fecha_solicitud", "desc");
-      logger.info("[SolicitudesRepository] Solicitudes encontradas", { count: result.length });
-      return result;
-    } catch (err: any) {
-      logger.error("[SolicitudesRepository] Error al buscar solicitudes", { error: err.message, filter });
-      throw err;
-    }
-  },
-
-  async findById(id: number) {
-    logger.debug("[SolicitudesRepository] Buscando solicitud por ID", { id });
-    try {
-      const solicitud = await db<Solicitud>("solicitudes").where({ id_solicitudes: id }).first();
-      if (solicitud) {
-        logger.info("[SolicitudesRepository] Solicitud encontrada", { id });
-      } else {
-        logger.warn("[SolicitudesRepository] Solicitud no encontrada", { id });
+      if (data.fecha_solicitud instanceof Date) {
+        data.fecha_solicitud = format(data.fecha_solicitud, 'yyyy-MM-dd');
       }
-      return solicitud;
+
+      const ids = await db('solicitudes').insert(data);
+      const id = ids[0];
+      
+      if (!id) throw new Error("No se pudo insertar la solicitud");
+      
+      logger.info("[SolicitudesRepository] Cabecera insertada", { id });
+      return id;
     } catch (err: any) {
-      logger.error("[SolicitudesRepository] Error al buscar solicitud por ID", { error: err.message, id });
+      logger.error("[SolicitudesRepository] Error en insertSolicitud", { error: err.message });
       throw err;
     }
   },
 
-  async update(id: number, data: Partial<Solicitud>) {
-    logger.debug("[SolicitudesRepository] Actualizando solicitud", { id, data });
+  // Insertar detalle de solicitud
+  async insertDetalle(data: Partial<SolicitudDetalle>): Promise<number> {
     try {
-      await db("solicitudes").where({ id_solicitudes: id }).update(data);
-      logger.info("[SolicitudesRepository] Solicitud actualizada", { id });
-      return this.findById(id);
+      const ids = await db('solicitudes_detalle').insert(data);
+      const id = ids[0];
+
+      if (!id) throw new Error("No se pudo insertar el detalle");
+
+      return id;
     } catch (err: any) {
-      logger.error("[SolicitudesRepository] Error al actualizar solicitud", { error: err.message, id, data });
+      logger.error("[SolicitudesRepository] Error en insertDetalle", { error: err.message });
       throw err;
     }
   },
 
-  async remove(id: number) {
-    logger.debug("[SolicitudesRepository] Eliminando solicitud", { id });
+  async insertReserva(id_solicitud: number, id_lote: number, cantidad: number) {
     try {
-      const deleted = await db("solicitudes").where({ id_solicitudes: id }).del();
-      if (deleted > 0) {
-        logger.info("[SolicitudesRepository] Solicitud eliminada", { id });
-      } else {
-        logger.warn("[SolicitudesRepository] No se encontró solicitud para eliminar", { id });
-      }
-      return deleted;
+      return await db('reservas').insert({
+        id_solicitud,
+        id_lote,
+        cantidad,
+        estado: 'Pendiente'
+      });
     } catch (err: any) {
-      logger.error("[SolicitudesRepository] Error al eliminar solicitud", { error: err.message, id });
+      logger.error("[SolicitudesRepository] Error en insertReserva", { error: err.message });
       throw err;
     }
   },
+
+  // Obtener lotes disponibles
+  async getLotesDisponibles(id_insumo: number, id_subalmacen: number) {
+    try {
+      return await db('lotes')
+        .where({ id_insumo, id_subalmacen })
+        .andWhere('cantidad_actual', '>', 0)
+        .orderBy('fecha_caducidad', 'asc');
+    } catch (err: any) {
+      logger.error("[SolicitudesRepository] Error en getLotesDisponibles", { error: err.message });
+      throw err;
+    }
+  },
+
+  // Listar solicitudes
+  async getSolicitudes(estado?: string, id_subalmacen?: number) {
+    try {
+      let query = db('solicitudes as so')
+        .join('cat_servicios as s', 'so.id_servicio', 's.id_servicios')
+        .join('subalmacenes as sa', 'so.id_subalmacen', 'sa.id_subalmacen')
+        .leftJoin('cat_medicos as m', 'so.id_medico', 'm.id_medico')
+        .select(
+          'so.id_solicitudes',
+          'so.tipo_solicitud',
+          'so.fecha_solicitud',
+          'so.estado',
+          'so.justificacion',
+          'so.id_servicio',
+          's.servicio as nombre_servicio',
+          'so.id_subalmacen',
+          'sa.nombre as nombre_subalmacen',
+          'so.id_medico',
+          db.raw("CONCAT(COALESCE(m.nombre, ''), ' ', COALESCE(m.apaterno, ''), ' ', COALESCE(m.amaterno, '')) as nombre_requisitor")
+        );
+
+      if (estado) query = query.where('so.estado', estado);
+      if (id_subalmacen) query = query.where('so.id_subalmacen', id_subalmacen);
+
+      return await query;
+    } catch (err: any) {
+      logger.error("[SolicitudesRepository] Error en getSolicitudes", { error: err.message });
+      throw err;
+    }
+  },
+
+  // Obtener detalle por ID
+  async getSolicitudById(id_solicitudes: number) {
+    try {
+      const solicitud = await db('solicitudes as so')
+        .join('cat_servicios as s', 'so.id_servicio', 's.id_servicios')
+        .join('subalmacenes as sa', 'so.id_subalmacen', 'sa.id_subalmacen')
+        .leftJoin('cat_medicos as m', 'so.id_medico', 'm.id_medico')
+        .select(
+          'so.id_solicitudes',
+          'so.tipo_solicitud',
+          'so.fecha_solicitud',
+          'so.estado',
+          'so.justificacion',
+          'so.id_servicio',
+          's.servicio as nombre_servicio',
+          'so.id_subalmacen',
+          'sa.nombre as nombre_subalmacen',
+          'so.id_medico',
+          db.raw("CONCAT(COALESCE(m.nombre, ''), ' ', COALESCE(m.apaterno, ''), ' ', COALESCE(m.amaterno, '')) as nombre_requisitor")
+        )
+        .where('so.id_solicitudes', id_solicitudes)
+        .first();
+
+      if (!solicitud) return null;
+
+      const detalles = await db('solicitudes_detalle as sd')
+        .join('cat_insumos as i', 'sd.id_insumos', 'i.id_insumos')
+        .select(
+          'sd.id_detalle',
+          'sd.id_insumos',
+          'i.descripcion_corta as descripcion',
+          'sd.cantidad',
+          'sd.id_lote',
+          'sd.estado'
+        )
+        .where('sd.id_solicitudes', id_solicitudes);
+
+      return { ...solicitud, insumos: detalles };
+    } catch (err: any) {
+      logger.error("[SolicitudesRepository] Error en getSolicitudById", { error: err.message });
+      throw err;
+    }
+  }
 };
