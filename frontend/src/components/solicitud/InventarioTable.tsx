@@ -120,7 +120,7 @@ export default function InventarioTable({
 
             rowClassName={(record: Insumo) => {
               if (record.id === highlightId) return "row-highlight";
-              if (changedIds.includes(record.id)) return "row-changed"; // 🔥 filas cambiadas
+              if (changedIds.includes(record.id)) return "row-changed"; 
               return "";
             }}
 
