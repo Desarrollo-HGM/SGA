@@ -1,56 +1,63 @@
 // src/services/solicitudesService.ts
-import { solicitudesRepository } from "../repositories/solicitudesRepository.js";
-import type { Solicitud } from "../models/solicitud.js";
-import { logger } from "../config/logger.js";
+import { solicitudesRepository } from '../repositories/solicitudesRepository.js';
+import { logger } from '../config/logger.js';
+import type { SolicitudPayload } from '../models/solicitud.js';
+import { format } from 'date-fns';
 
 export const solicitudesService = {
-  async create(data: Solicitud) {
-    logger.debug("[SolicitudesService] Creando solicitud", { data });
-    if (data.cantidad <= 0) {
-      logger.warn("[SolicitudesService] Validación fallida: cantidad <= 0", { cantidad: data.cantidad });
-      throw new Error("La cantidad debe ser mayor a 0");
+  async crearSolicitudFinal(payload: SolicitudPayload) {
+    logger.debug("[SolicitudesService] Iniciando creación de solicitud completa");
+    try {
+      // 1. Insertar cabecera usando el repositorio estructurado
+      const idSolicitud = await solicitudesRepository.insertSolicitud({
+        tipo_solicitud: payload.tipo_solicitud,
+        id_medico: payload.id_medico || null,
+        id_servicio: payload.id_servicio!,
+        id_subalmacen: payload.id_subalmacen,
+        fecha_solicitud: format(new Date(), 'yyyy-MM-dd'),
+        estado: 'Pendiente',
+        justificacion: payload.justificacion || null
+      });
+
+      // 2. Procesar insumos y asignar lotes (Lógica FIFO por fecha de caducidad)
+      for (const insumo of payload.insumos) {
+        let cantidadPendiente = insumo.cantidad;
+        const lotes = await solicitudesRepository.getLotesDisponibles(insumo.id_insumos, payload.id_subalmacen);
+
+        for (const lote of lotes) {
+          if (cantidadPendiente <= 0) break;
+          const cantidadAsignada = Math.min(cantidadPendiente, lote.cantidad_actual);
+
+          // Insertar en detalle
+          await solicitudesRepository.insertDetalle({
+            id_solicitudes: idSolicitud,
+            id_insumos: insumo.id_insumos,
+            cantidad: cantidadAsignada,
+            id_lote: lote.id_lote,
+            estado: 'Pendiente'
+          });
+
+          // Crear la reserva
+          await solicitudesRepository.insertReserva(idSolicitud, lote.id_lote, cantidadAsignada);
+
+          cantidadPendiente -= cantidadAsignada;
+        }
+      }
+
+      return { success: true, id_solicitudes: idSolicitud };
+    } catch (err: any) {
+      logger.error("[SolicitudesService] Error en crearSolicitudFinal", { error: err.message });
+      throw err;
     }
-    const solicitud = await solicitudesRepository.create(data);
-    logger.info("[SolicitudesService] Solicitud creada", { id: solicitud.id_solicitudes });
-    return solicitud;
   },
 
-  async list(filter?: { estado?: string; id_subalmacen?: number }) {
-    logger.debug("[SolicitudesService] Listando solicitudes", { filter });
-    return solicitudesRepository.findAll(filter);
+  async listarSolicitudes(estado?: string, id_subalmacen?: number) {
+    logger.debug("[SolicitudesService] Listando solicitudes con filtros", { estado, id_subalmacen });
+    return await solicitudesRepository.getSolicitudes(estado, id_subalmacen);
   },
 
-  async get(id: number) {
-    logger.debug("[SolicitudesService] Obteniendo solicitud", { id });
-    const solicitud = await solicitudesRepository.findById(id);
-    if (!solicitud) {
-      logger.warn("[SolicitudesService] Solicitud no encontrada", { id });
-      throw new Error("Solicitud no encontrada");
-    }
-    logger.info("[SolicitudesService] Solicitud obtenida", { id });
-    return solicitud;
-  },
-
-  async update(id: number, data: Partial<Solicitud>) {
-    logger.debug("[SolicitudesService] Actualizando solicitud", { id, data });
-    const solicitud = await solicitudesRepository.update(id, data);
-
-    if (!solicitud) {
-      logger.error("[SolicitudesService] Solicitud no encontrada al actualizar", { id });
-      throw new Error("Solicitud no encontrada");
-    }
-
-    if (!solicitud.id_solicitudes || !solicitud.id_subalmacen || !solicitud.cantidad) {
-      logger.warn("[SolicitudesService] Solicitud incompleta para actualizar", { id });
-      throw new Error("Solicitud incompleta para actualizar");
-    }
-
-    logger.info("[SolicitudesService] Solicitud actualizada", { id });
-    return solicitud;
-  },
-
-  async remove(id: number) {
-    logger.debug("[SolicitudesService] Eliminando solicitud", { id });
-    return solicitudesRepository.remove(id);
-  },
+  async detalleSolicitud(id_solicitudes: number) {
+    logger.debug("[SolicitudesService] Obteniendo detalle de solicitud", { id_solicitudes });
+    return await solicitudesRepository.getSolicitudById(id_solicitudes);
+  }
 };

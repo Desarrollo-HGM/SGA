@@ -1,3 +1,4 @@
+// src/index.ts
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -12,6 +13,15 @@ import { requireRole } from "./middlewares/roleMiddleware.js";
 import { logger } from "./config/logger.js"; 
 import stockRoutes from "./routes/stockRoutes.js";
 
+process.on('uncaughtException', (err) => {
+    console.log("¡LO TENGO!");
+    console.error("NOMBRE DEL ERROR:", err.name);
+    console.error("MENSAJE:", err.message);
+    console.error("CÓDIGO:", (err as any).code);
+    console.error("STACK TRACE COMPLETO:");
+    console.error(err.stack);
+    process.exit(1);
+});
 
 dotenv.config({ path: '.env.local' });
 
@@ -45,13 +55,9 @@ app.use("/api/insumos", authMiddleware, requireRole(["Administrador", "Almacen"]
 app.use("/api/lotes", authMiddleware, requireRole(["Administrador", "Almacen"]), lotesRoutes);
 app.use("/api/movimientos", authMiddleware, requireRole(["Administrador", "Almacen"]), movimientosRoutes);
 app.use("/api/solicitudes", authMiddleware, requireRole(["Administrador", "Almacen", "Auditor"]), solicitudesRoutes);
-app.use(
-  "/api/stock",
-  authMiddleware,
-  requireRole(["Administrador", "Almacen", "Auditor"]),
-  stockRoutes
-);
+app.use(  "/api/stock",  authMiddleware,  requireRole(["Administrador", "Almacen", "Auditor"]),  stockRoutes);
 
 app.listen(PORT, '0.0.0.0', () => {
  logger.info(`[Server] Servidor backend escuchando en red en puerto ${PORT}`);
 });
+   
