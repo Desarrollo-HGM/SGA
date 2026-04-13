@@ -10,7 +10,7 @@
     "esModuleInterop": true,
 
     /* Bundler mode */
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "verbatimModuleSyntax": true,
@@ -27,7 +27,6 @@
     "noUncheckedSideEffectImports": true,
 
     /* Path alias */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

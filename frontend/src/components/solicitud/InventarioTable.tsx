@@ -25,9 +25,8 @@ interface Props {
   cart: CartItem[];
   loading?: boolean;
   highlightId?: number;
-  changedIds?: number[]; // 🔥 filas cambiadas
+  changedIds?: number[]; 
 }
-
 const PAGE_SIZE = 10;
 
 export default function InventarioTable({
