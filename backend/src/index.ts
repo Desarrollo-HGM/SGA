@@ -12,6 +12,7 @@ import { authMiddleware } from "./middlewares/authMiddleware.js";
 import { requireRole } from "./middlewares/roleMiddleware.js";   
 import { logger } from "./config/logger.js"; 
 import stockRoutes from "./routes/stockRoutes.js";
+import surtirRoutes from './routes/surtirRoutes.js';
 
 process.on('uncaughtException', (err) => {
     console.log("¡LO TENGO!");
@@ -56,7 +57,7 @@ app.use("/api/lotes", authMiddleware, requireRole(["Administrador", "Almacen"]),
 app.use("/api/movimientos", authMiddleware, requireRole(["Administrador", "Almacen"]), movimientosRoutes);
 app.use("/api/solicitudes", authMiddleware, requireRole(["Administrador", "Almacen", "Auditor"]), solicitudesRoutes);
 app.use(  "/api/stock",  authMiddleware,  requireRole(["Administrador", "Almacen", "Auditor"]),  stockRoutes);
-
+app.use('/api', surtirRoutes);
 app.listen(PORT, '0.0.0.0', () => {
  logger.info(`[Server] Servidor backend escuchando en red en puerto ${PORT}`);
 });

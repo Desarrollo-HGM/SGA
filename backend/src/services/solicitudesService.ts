@@ -1,4 +1,3 @@
-// src/services/solicitudesService.ts
 import { solicitudesRepository } from '../repositories/solicitudesRepository.js';
 import { logger } from '../config/logger.js';
 import type { SolicitudPayload } from '../models/solicitud.js';
@@ -8,9 +7,9 @@ export const solicitudesService = {
   async crearSolicitudFinal(payload: SolicitudPayload) {
     logger.debug("[SolicitudesService] Iniciando creación de solicitud completa");
     try {
-      // 1. Insertar cabecera usando el repositorio estructurado
+      // 1. Insertar cabecera con tipo_solicitud
       const idSolicitud = await solicitudesRepository.insertSolicitud({
-        tipo_solicitud: payload.tipo_solicitud,
+        tipo_solicitud: payload.tipo_solicitud,   // 👈 obligatorio
         id_medico: payload.id_medico || null,
         id_servicio: payload.id_servicio!,
         id_subalmacen: payload.id_subalmacen,
@@ -19,7 +18,7 @@ export const solicitudesService = {
         justificacion: payload.justificacion || null
       });
 
-      // 2. Procesar insumos y asignar lotes (Lógica FIFO por fecha de caducidad)
+      // 2. Procesar insumos y asignar lotes
       for (const insumo of payload.insumos) {
         let cantidadPendiente = insumo.cantidad;
         const lotes = await solicitudesRepository.getLotesDisponibles(insumo.id_insumos, payload.id_subalmacen);
@@ -28,7 +27,6 @@ export const solicitudesService = {
           if (cantidadPendiente <= 0) break;
           const cantidadAsignada = Math.min(cantidadPendiente, lote.cantidad_actual);
 
-          // Insertar en detalle
           await solicitudesRepository.insertDetalle({
             id_solicitudes: idSolicitud,
             id_insumos: insumo.id_insumos,
@@ -37,7 +35,6 @@ export const solicitudesService = {
             estado: 'Pendiente'
           });
 
-          // Crear la reserva
           await solicitudesRepository.insertReserva(idSolicitud, lote.id_lote, cantidadAsignada);
 
           cantidadPendiente -= cantidadAsignada;
@@ -51,9 +48,9 @@ export const solicitudesService = {
     }
   },
 
-  async listarSolicitudes(estado?: string, id_subalmacen?: number) {
-    logger.debug("[SolicitudesService] Listando solicitudes con filtros", { estado, id_subalmacen });
-    return await solicitudesRepository.getSolicitudes(estado, id_subalmacen);
+  async listarSolicitudes(estado?: string, id_subalmacen?: number, tipo_solicitud?: string) {
+    logger.debug("[SolicitudesService] Listando solicitudes con filtros", { estado, id_subalmacen, tipo_solicitud });
+    return await solicitudesRepository.getSolicitudes(estado, id_subalmacen, tipo_solicitud);
   },
 
   async detalleSolicitud(id_solicitudes: number) {

@@ -7,23 +7,28 @@ import { format } from 'date-fns';
 export const solicitudesRepository = {
   // Insertar cabecera de solicitud
   async insertSolicitud(data: Partial<Solicitud>): Promise<number> {
-    try {
-      if (data.fecha_solicitud instanceof Date) {
-        data.fecha_solicitud = format(data.fecha_solicitud, 'yyyy-MM-dd');
-      }
-
-      const ids = await db('solicitudes').insert(data);
-      const id = ids[0];
-      
-      if (!id) throw new Error("No se pudo insertar la solicitud");
-      
-      logger.info("[SolicitudesRepository] Cabecera insertada", { id });
-      return id;
-    } catch (err: any) {
-      logger.error("[SolicitudesRepository] Error en insertSolicitud", { error: err.message });
-      throw err;
+  try {
+    if (data.fecha_solicitud instanceof Date) {
+      data.fecha_solicitud = format(data.fecha_solicitud, 'yyyy-MM-dd');
     }
-  },
+
+    if (!data.tipo_solicitud) {
+      throw new Error("El tipo de solicitud es obligatorio");
+    }
+
+    const ids = await db('solicitudes').insert(data);
+    const id = ids[0];
+
+    if (!id) throw new Error("No se pudo insertar la solicitud");
+
+    logger.info("[SolicitudesRepository] Cabecera insertada", { id, tipo: data.tipo_solicitud });
+    return id;
+  } catch (err: any) {
+    logger.error("[SolicitudesRepository] Error en insertSolicitud", { error: err.message });
+    throw err;
+  }
+}
+,
 
   // Insertar detalle de solicitud
   async insertDetalle(data: Partial<SolicitudDetalle>): Promise<number> {
@@ -68,35 +73,37 @@ export const solicitudesRepository = {
   },
 
   // Listar solicitudes
-  async getSolicitudes(estado?: string, id_subalmacen?: number) {
-    try {
-      let query = db('solicitudes as so')
-        .join('cat_servicios as s', 'so.id_servicio', 's.id_servicios')
-        .join('subalmacenes as sa', 'so.id_subalmacen', 'sa.id_subalmacen')
-        .leftJoin('cat_medicos as m', 'so.id_medico', 'm.id_medico')
-        .select(
-          'so.id_solicitudes',
-          'so.tipo_solicitud',
-          'so.fecha_solicitud',
-          'so.estado',
-          'so.justificacion',
-          'so.id_servicio',
-          's.servicio as nombre_servicio',
-          'so.id_subalmacen',
-          'sa.nombre as nombre_subalmacen',
-          'so.id_medico',
-          db.raw("CONCAT(COALESCE(m.nombre, ''), ' ', COALESCE(m.apaterno, ''), ' ', COALESCE(m.amaterno, '')) as nombre_requisitor")
-        );
+  async getSolicitudes(estado?: string, id_subalmacen?: number, tipo_solicitud?: string) {
+  try {
+    let query = db('solicitudes as so')
+      .join('cat_servicios as s', 'so.id_servicio', 's.id_servicios')
+      .join('subalmacenes as sa', 'so.id_subalmacen', 'sa.id_subalmacen')
+      .leftJoin('cat_medicos as m', 'so.id_medico', 'm.id_medico')
+      .select(
+        'so.id_solicitudes',
+        'so.tipo_solicitud',
+        'so.fecha_solicitud',
+        'so.estado',
+        'so.justificacion',
+        'so.id_servicio',
+        's.servicio as nombre_servicio',
+        'so.id_subalmacen',
+        'sa.nombre as nombre_subalmacen',
+        'so.id_medico',
+        db.raw("CONCAT(COALESCE(m.nombre, ''), ' ', COALESCE(m.apaterno, ''), ' ', COALESCE(m.amaterno, '')) as nombre_requisitor")
+      );
 
-      if (estado) query = query.where('so.estado', estado);
-      if (id_subalmacen) query = query.where('so.id_subalmacen', id_subalmacen);
+    if (estado) query = query.where('so.estado', estado);
+    if (id_subalmacen) query = query.where('so.id_subalmacen', id_subalmacen);
+    if (tipo_solicitud) query = query.where('so.tipo_solicitud', tipo_solicitud);
 
-      return await query;
-    } catch (err: any) {
-      logger.error("[SolicitudesRepository] Error en getSolicitudes", { error: err.message });
-      throw err;
-    }
-  },
+    return await query;
+  } catch (err: any) {
+    logger.error("[SolicitudesRepository] Error en getSolicitudes", { error: err.message });
+    throw err;
+  }
+}
+,
 
   // Obtener detalle por ID
   async getSolicitudById(id_solicitudes: number) {

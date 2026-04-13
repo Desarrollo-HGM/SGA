@@ -1,4 +1,3 @@
-// src/controllers/solicitudesController.ts
 import type { Request, Response } from 'express';
 import { solicitudesService } from '../services/solicitudesService.js';
 import { logger } from '../config/logger.js';
@@ -18,10 +17,11 @@ export const solicitudesController = {
   // GET /api/solicitudes
   async getAll(req: Request, res: Response) {
     try {
-      const { estado, id_subalmacen } = req.query;
+      const { estado, id_subalmacen, tipo_solicitud } = req.query;
       const result = await solicitudesService.listarSolicitudes(
         estado as string,
-        id_subalmacen ? Number(id_subalmacen) : undefined
+        id_subalmacen ? Number(id_subalmacen) : undefined,
+        tipo_solicitud as string
       );
       res.json(result);
     } catch (error: any) {
