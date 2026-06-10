@@ -29,7 +29,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
-import classes from '../styles/HeaderMegaMenu.module.css';
+import classes from '../../styles/HeaderMegaMenu.module.css';
 import '@mantine/core/styles.css';
 import type { TablerIcon } from '@tabler/icons-react';
 import CampanaContainer from "../campana/CampanaContainer";

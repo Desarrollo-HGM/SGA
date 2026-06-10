@@ -281,6 +281,7 @@ export default function ModalDetalleSolicitud({
   size="40%"
   radius="lg"
   withCloseButton={false} // opcional si usas tu propio botón
+  
 >
 
   {/* HEADER PERSONALIZADO */}

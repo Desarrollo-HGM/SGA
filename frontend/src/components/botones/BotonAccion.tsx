@@ -1,9 +1,10 @@
-import { Button } from "@mantine/core";
+import { Button, Group } from "@mantine/core";
 import {
   IconCheck,
   IconPlus,
   IconX,
-  IconBan
+  IconBan,
+  IconPackage
 } from "@tabler/icons-react";
 
 import type { Insumo, CartItem } from "../../types/global";
@@ -14,21 +15,26 @@ interface Props {
   cart: CartItem[];
   addToCart: (item: Insumo) => void;
   removeFromCart: (id: number) => void;
+
+  onSurtir?: (item: Insumo) => void;
 }
 
 export default function BotonAccion({
   record,
   cart,
   addToCart,
-  removeFromCart
+  removeFromCart,
+  onSurtir
 }: Props) {
-
   const [hover, setHover] = useState(false);
 
-  const isInCart = cart.some((item) => item.id === record.id);
+  const isInCart = cart.some(
+    (item) => item.id === record.id
+  );
+
   const sinStock = record.stock <= 0;
 
-  const handleClick = () => {
+  const handleSolicitud = () => {
     if (sinStock) return;
 
     if (isInCart) {
@@ -38,20 +44,16 @@ export default function BotonAccion({
     }
   };
 
-  /* 🎨 CONFIG VISUAL DINÁMICA */
   let color = "blue";
-  let variant: "filled" | "light" | "outline" = "filled";
   let label = "Solicitar";
   let icon = <IconPlus size={14} />;
 
   if (sinStock) {
     color = "gray";
-    variant = "outline";
     label = "Sin stock";
     icon = <IconBan size={14} />;
   } else if (isInCart) {
     color = hover ? "red" : "green";
-    variant = "light";
     label = hover ? "Quitar" : "Agregado";
     icon = hover
       ? <IconX size={14} />
@@ -59,22 +61,33 @@ export default function BotonAccion({
   }
 
   return (
-    <Button
-      size="xs"
-      radius="md"
-      color={color}
-     
-      leftSection={icon}
-      onClick={handleClick}
-      disabled={sinStock}
-       variant="light"
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{
-        transition: "all 0.2s ease",
-      }}
-    >
-      {label}
-    </Button>
+    <Group gap={5} justify="center">
+      <Button
+        size="xs"
+        radius="md"
+        color={color}
+        leftSection={icon}
+        onClick={handleSolicitud}
+        disabled={sinStock}
+        variant="light"
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+      >
+        {label}
+      </Button>
+
+      {!sinStock && onSurtir && (
+        <Button
+          size="xs"
+          radius="md"
+          color="green"
+          variant="light"
+          leftSection={<IconPackage size={14} />}
+          onClick={() => onSurtir(record)}
+        >
+          Surtir
+        </Button>
+      )}
+    </Group>
   );
 }

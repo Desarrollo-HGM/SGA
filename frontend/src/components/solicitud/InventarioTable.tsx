@@ -9,11 +9,17 @@ import {
   ScrollArea,
   Center,
   Loader,
-  Code
+  Code,
+  Drawer,
+  NumberInput,
+  Button, 
+  Table,
+  ThemeIcon
+
 } from "@mantine/core";
 
 import BotonAccion from "../botones/BotonAccion";
-import { IconBuildingHospital } from "@tabler/icons-react";
+import { IconBuildingHospital,IconTrash, IconX,IconCheck,IconClipboardList } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 
 import type { Insumo, CartItem } from "../../types/global";
@@ -22,11 +28,17 @@ interface Props {
   data: Insumo[];
   addToCart: (item: Insumo) => void;
   removeFromCart: (id: number) => void;
+
   cart: CartItem[];
   loading?: boolean;
   highlightId?: number;
   changedIds?: number[]; 
 }
+
+
+
+
+
 const PAGE_SIZE = 10;
 
 export default function InventarioTable({
@@ -48,8 +60,81 @@ export default function InventarioTable({
     subalmacen: "",
   });
 
+const [drawerSurtido, setDrawerSurtido] = useState(false);
+
+const [surtidoItems, setSurtidoItems] = useState<
+  (Insumo & { cantidad: number })[]
+>([]);
+
+
+
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const viewportRef = useRef<HTMLDivElement>(null);
+
+  const abrirDrawerSurtido = (item: Insumo) => {
+  setSurtidoItems(prev => {
+    const existe = prev.find(i => i.id === item.id);
+
+    if (existe) {
+      return prev;
+    }
+
+    return [
+      ...prev,
+      {
+        ...item,
+        cantidad: 1
+      }
+    ];
+  });
+
+  setDrawerSurtido(true);
+};
+
+const actualizarCantidad = (
+  id: number,
+  cantidad: number
+) => {
+  if (!cantidad || cantidad < 1) {
+    cantidad = 1;
+  }
+
+  if (cantidad > 40) {
+    cantidad = 40;
+  }
+
+  setSurtidoItems(prev =>
+    prev.map(item =>
+      item.id === id
+        ? {
+            ...item,
+            cantidad
+          }
+        : item
+    )
+  );
+};
+
+const eliminarSurtido = (id: number) => {
+  setSurtidoItems(prev =>
+    prev.filter(item => item.id !== id)
+  );
+};
+
+const generarSurtimiento = async () => {
+  if (!surtidoItems.length) return;
+
+  console.log("SURTIMIENTO:", surtidoItems);
+
+  /*
+  await api.post(
+    "/surtimientos",
+    surtidoItems
+  );
+  */
+
+  setDrawerSurtido(false);
+};
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -82,6 +167,7 @@ export default function InventarioTable({
   };
 
   return (
+     <>
     <Card withBorder radius="md" shadow="sm" mt="md" style={{ borderLeft: "6px solid #0b6fa4", background: "#f8fbfd" }}>
 
       {/* HEADER */}
@@ -154,19 +240,176 @@ export default function InventarioTable({
                 accessor: "accion",
                 title: "Acción",
                 textAlign: "center",
-                render: (record: Insumo) => (
-                  <BotonAccion
-                    record={record}
-                    cart={cart}
-                    addToCart={addToCart}
-                    removeFromCart={removeFromCart}
-                  />
-                )
+            render: (record: Insumo) => (
+  <BotonAccion
+    record={record}
+    cart={cart}
+    addToCart={addToCart}
+    removeFromCart={removeFromCart}
+    onSurtir={abrirDrawerSurtido}
+  />
+)
               }
             ]}
           />
         )}
       </ScrollArea>
-    </Card>
-  );
+       </Card>
+       
+       <Drawer
+  opened={drawerSurtido}
+
+  onClose={() => setDrawerSurtido(false)}
+  position="bottom"
+  size="70%"
+  radius="24px 24px 0 0"
+  shadow="xl"
+  padding="md"
+  title={null}
+  closeButtonProps={{
+  size: "lg",
+  style: {
+    backgroundColor: "#fff5f5",
+    color: "#fa5252",
+    borderRadius: "999px",
+  },
+}}
+         
+>
+  {/* HEADER */}
+
+  <Group mb="md" gap="sm">
+    <ThemeIcon
+      size="lg"
+      radius="xl"
+      color="blue"
+      variant="light"
+    >
+      <IconClipboardList size={20} />
+    </ThemeIcon>
+
+    <div>
+      <Text fw={700} size="lg">
+        Surtir Insumos
+      </Text>
+
+      <Text size="xs" c="dimmed">
+        Administra los insumos seleccionados
+      </Text>
+    </div>
+  </Group>
+
+  {/* CARD */}
+
+  <Card
+    withBorder
+    radius="md"
+    shadow="sm"
+    style={{
+      borderLeft: "6px solid #0b6fa4",
+      background: "#f8fbfd",
+    }}
+  >
+    <Table
+      striped
+      highlightOnHover
+      verticalSpacing="sm"
+      horizontalSpacing="md"
+      style={{ textAlign: "center" }}
+    >
+      <thead
+        style={{
+          backgroundColor: "#0b6fa4",
+          color: "white",
+        }}
+      >
+        <tr>
+          <th style={{ textAlign: "center" }}>
+            Insumo
+          </th>
+
+          <th
+            style={{
+              textAlign: "center",
+              width: 120,
+            }}
+          >
+            Cantidad
+          </th>
+
+          <th
+            style={{
+              textAlign: "center",
+              width: 120,
+            }}
+          >
+            Acción
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {surtidoItems.map((item) => (
+          <tr key={item.id}>
+            <td>
+              <Text fw={500}>
+                {item.insumo}
+              </Text>
+            </td>
+
+            <td>
+              <NumberInput
+                min={1}
+                max={40}
+                value={item.cantidad}
+                size="xs"
+                style={{
+                  width: 90,
+                  margin: "auto",
+                }}
+                onChange={(value) =>
+                  actualizarCantidad(
+                    item.id,
+                    Number(value)
+                  )
+                }
+              />
+            </td>
+
+            <td>
+              <Button
+                size="xs"
+                color="red"
+                variant="light"
+                radius="xl"
+                leftSection={<IconTrash size={14} />}
+                onClick={() =>
+                  eliminarSurtido(item.id)
+                }
+              >
+                Eliminar
+              </Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+
+    <Button
+      mt="md"
+      fullWidth
+      radius="xl"
+      size="md"
+      color="green"
+      variant="light"
+      leftSection={<IconCheck size={18} />}
+      onClick={generarSurtimiento}
+    >
+      Generar surtimiento
+    </Button>
+  </Card>
+</Drawer>
+
+  </>
+);
 }
