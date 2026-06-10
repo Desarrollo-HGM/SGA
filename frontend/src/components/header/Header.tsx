@@ -178,7 +178,7 @@ export function HeaderMegaMenu() {
 
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
         </Group>
-      </header>
+      </header>  
 
       {/* Drawer móvil */}
       <Drawer opened={drawerOpened} onClose={closeDrawer} size="100%" padding="md" title="Menú móvil" hiddenFrom="sm">
