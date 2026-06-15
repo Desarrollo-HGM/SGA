@@ -1,3 +1,4 @@
+//src/controllers/solicitudesController.ts
 import type { Request, Response } from 'express';
 import { solicitudesService } from '../services/solicitudesService.js';
 import { logger } from '../config/logger.js';

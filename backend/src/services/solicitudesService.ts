@@ -1,3 +1,4 @@
+//src/services/solicitudesService.ts
 import { solicitudesRepository } from '../repositories/solicitudesRepository.js';
 import { logger } from '../config/logger.js';
 import type { SolicitudPayload } from '../models/solicitud.js';
