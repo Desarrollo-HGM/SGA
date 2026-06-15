@@ -35,9 +35,7 @@ interface Props {
   changedIds?: number[]; 
 }
 
-   
-
-
+         
 
 const PAGE_SIZE = 10;
 
