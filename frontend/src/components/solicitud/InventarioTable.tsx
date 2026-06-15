@@ -19,7 +19,7 @@ import {
 } from "@mantine/core";
 
 import BotonAccion from "../botones/BotonAccion";
-import { IconBuildingHospital,IconTrash, IconX,IconCheck,IconClipboardList } from "@tabler/icons-react";
+import { IconBuildingHospital,IconTrash, IconCheck,IconClipboardList } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 
 import type { Insumo, CartItem } from "../../types/global";
