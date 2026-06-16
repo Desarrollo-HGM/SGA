@@ -20,6 +20,8 @@ export interface Insumo {
 export interface CartItem extends Insumo {
   cantidad: number;
   justificacion?: string;
+  id_servicio?: number;
+  id_subalmacen?: number;
 }
 
 export interface DatosPDF {
