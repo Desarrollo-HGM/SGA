@@ -15,6 +15,7 @@ import {
 } from "@tabler/icons-react";
 
 import type { CartItem } from "../../types/global";
+import type { User } from "../../types/User";
 import type { Dispatch, SetStateAction } from "react";
 
 interface Props {
@@ -26,6 +27,13 @@ interface Props {
   isSubmitting: boolean;
   isSubmitted: boolean;
 }
+
+
+const user: User = JSON.parse(
+  localStorage.getItem("user") || "{}"
+);
+
+
 
 export default function CarritoSolicitud({
   cart,
@@ -65,6 +73,9 @@ export default function CarritoSolicitud({
               Insumo
             </th>
 
+        
+
+
             <th style={{ textAlign: "center", width: 110 }}>
               Cantidad
             </th>
@@ -90,9 +101,23 @@ export default function CarritoSolicitud({
               <tr key={item.id}>
 
                 {/* INSUMO */}
-                <td>
-                  <Text fw={500}>{item.insumo}</Text>
-                </td>
+           <td>
+  <Text fw={500}>{item.insumo}</Text>
+
+<Text size="xs" c="dimmed">
+    id: {item.id}
+  </Text>
+  <Text size="xs" c="dimmed">
+    Servicio: {item.id_servicio}
+  </Text>
+
+  <Text size="xs" c="dimmed">
+    Subalmacén: {item.id_subalmacen}
+  </Text>
+  <Text size="xs" c="blue">
+  Médico: {user.id}
+</Text>
+</td>
 
                 {/* CANTIDAD */}
                 <td>

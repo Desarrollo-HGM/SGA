@@ -21,7 +21,6 @@ export const stockService = {
       id: index,
       id_servicio: item.id_servicio,
       id_subalmacen: item.id_subalmacen,
-      id_medico: item.id_medico,
       nombre_insumo: item.nombre_insumo,
       nombre_subalmacen: item.nombre_subalmacen,
       stock_total_insumo: item.stock_total_insumo,

@@ -124,13 +124,6 @@ const generarSurtimiento = async () => {
 
   console.log("SURTIMIENTO:", surtidoItems);
 
-  /*
-  await api.post(
-    "/surtimientos",
-    surtidoItems
-  );
-  */
-
   setDrawerSurtido(false);
 };
 
@@ -148,6 +141,7 @@ const generarSurtimiento = async () => {
       normalize(item.tipo_insumo).includes(normalize(filters.tipo)) &&
       normalize(item.unidad_distribucion).includes(normalize(filters.unidad)) &&
       normalize(item.servicio).includes(normalize(filters.servicio)) &&
+      
       normalize(item.subalmacen).includes(normalize(filters.subalmacen))
     );
   }, [data, filters]);
@@ -353,6 +347,7 @@ const generarSurtimiento = async () => {
               <Text fw={500}>
                 {item.insumo}
               </Text>
+              
             </td>
 
             <td>

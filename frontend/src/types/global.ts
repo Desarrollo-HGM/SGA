@@ -2,6 +2,8 @@
 
 export interface Insumo {
   id: number;
+  id_servicio: number;
+  id_subalmacen: number;
   clave: string;
   insumo: string;
   tipo_insumo: string;
@@ -14,15 +16,19 @@ export interface Insumo {
   maximo: number;
   codigo_barras?: string; 
   loading?: boolean;
-
+  
 }
 
 export interface CartItem extends Insumo {
   cantidad: number;
   justificacion?: string;
+  id_servicio: number;
+  id_subalmacen: number;
 }
 
 export interface DatosPDF {
   
   cart: CartItem[];
+
 }
+
