@@ -1,10 +1,11 @@
+//src/services/AuthService.ts
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/UserRepository.js";
 import { logger } from "../config/logger.js";
 
-const ACCESS_EXPIRATION = "36000m"; // token corto
-const INACTIVITY_LIMIT = 2 * 60 * 60 * 10000; // 2 horas en ms
+const ACCESS_EXPIRATION = "15m"; // token corto
+const INACTIVITY_LIMIT = 2 * 60 * 60 * 1000; // 2 horas en ms
 
 const generateAccessToken = (user: any) => {
   return jwt.sign(
