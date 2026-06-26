@@ -2,8 +2,7 @@
 import type { Response, NextFunction } from "express";
 import type { AuthRequest } from "./authMiddleware";
 
-// Middleware para validar rol específico
-export const requireRole = (rolesPermitidos: string[]) => {
+export const requireRole = (rolesPermitidos: ("solicitante" | "guarda" | "almacen" | "admin")[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ message: "No autenticado" });
@@ -18,7 +17,6 @@ export const requireRole = (rolesPermitidos: string[]) => {
   };
 };
 
-// Middleware para validar nivel de acceso (Alto, Medio, Bajo)
 export const requireAccessLevel = (nivelesPermitidos: ("Alto" | "Medio" | "Bajo")[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {

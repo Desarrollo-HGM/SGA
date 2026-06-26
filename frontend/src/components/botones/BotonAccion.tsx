@@ -72,6 +72,7 @@ export default function BotonAccion({
         variant="light"
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
+        
       >
         {label}
       </Button>

@@ -3,23 +3,9 @@ import autoTable from "jspdf-autotable";
 import QRCode from "qrcode";
 import CryptoJS from "crypto-js";
 import logo from "../../src/assets/hgm.png";
+import type { DatosPDF } from "../types/pdf";
 
-/* ================= TIPOS ================= */
 
-export interface ItemPDF {
-  insumo: string;
-  cantidad: number;
-  lote?: string;
-  stock?: number;
-  maximo?: number;
-  justificacion?: string;
-}
-
-export interface DatosPDF {
-  cart: ItemPDF[];
-  quienSurte?: string;
-  quienRecibe?: string;
-}
 
 /* ================= FUNCIÓN ================= */
 

@@ -9,6 +9,8 @@ export interface AuthRequest extends Request {
 export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     // El token normalmente viene en el header: Authorization: Bearer <token>
+
+     
     const authHeader = req.headers["authorization"];
     if (!authHeader) {
       return res.status(401).json({ message: "Token no proporcionado" });

@@ -19,8 +19,8 @@ export const stockRepository = {
           "s.servicio as servicio",
           "s.centro_costo as centro_costo",
           "l.id_subalmacen",
-          "l.id_servicio",
-          "l.id_lote as id_lote",
+          "sa.id_servicio",
+           "l.id_lote",
           db.raw("SUM(l.cantidad_actual) as stock"),
           "cs.minimo",
           "cs.maximo"

@@ -122,7 +122,6 @@ const eliminarSurtido = (id: number) => {
 const generarSurtimiento = async () => {
   if (!surtidoItems.length) return;
 
-  console.log("SURTIMIENTO:", surtidoItems);
 
   setDrawerSurtido(false);
 };

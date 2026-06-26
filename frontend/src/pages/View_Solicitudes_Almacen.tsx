@@ -20,10 +20,12 @@ import {
 import InventarioTable from "../components/solicitud/InventarioTable";
 import CarritoSolicitud from "../components/solicitud/CarritoSolicitud";
 
-
 import { useInventario } from "../hooks/useInventario";
+import { enviarSolicitudFinal } from "../services/solicitudesService";
 import { generarPDF } from "../utils/generarPDF";
+
 import type { CartItem, Insumo } from "../types/global";
+import type { User } from "../types/User";
 
 export default function SolicitudesDashboard() {
 
@@ -34,110 +36,165 @@ export default function SolicitudesDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const { data, loading, error, changedIds } = useInventario();
+  const { data, loading, error, changedIds } =
+    useInventario();
+
+  const user: User = JSON.parse(
+    localStorage.getItem("user") || "{}"
+  );
 
   /* ===============================
      FILTRO
   =============================== */
   const filtered = useMemo(() => {
+
     const q = search.toLowerCase();
-    return data.filter(i =>
+
+    return data.filter((i) =>
       i.insumo.toLowerCase().includes(q) ||
       i.servicio.toLowerCase().includes(q) ||
       i.subalmacen.toLowerCase().includes(q)
     );
+
   }, [search, data]);
 
   /* ===============================
-     🟢 CARRITO
+     CARRITO
   =============================== */
   const addToCart = (item: Insumo) => {
-    setCart(prev => {
-      const exist = prev.find(i => i.id === item.id);
+
+    setCart((prev) => {
+
+      const exist =
+        prev.find((i) => i.id === item.id);
 
       if (exist) {
+
         if (exist.cantidad >= item.stock) {
+
           alert("Stock insuficiente");
+
           return prev;
         }
 
-        return prev.map(i =>
+        return prev.map((i) =>
           i.id === item.id
-            ? { ...i, cantidad: i.cantidad + 1 }
+            ? {
+                ...i,
+                cantidad: i.cantidad + 1
+              }
             : i
         );
       }
 
-      return [...prev, { ...item, cantidad: 1 }];
+      return [
+        ...prev,
+        {
+          ...item,
+          cantidad: 1
+        }
+      ];
+
     });
+
   };
 
   const removeFromCart = (id: number) => {
-    setCart(prev => prev.filter(i => i.id !== id));
+
+    setCart((prev) =>
+      prev.filter((i) => i.id !== id)
+    );
+
   };
 
-  const updateCantidad = (id: number, val: number) => {
-    if (val <= 0) return;
+  const updateCantidad = (
+    id: number,
+    cantidad: number
+  ) => {
 
-    setCart(prev =>
-      prev.map(i =>
-        i.id === id ? { ...i, cantidad: val } : i
+    if (cantidad <= 0) return;
+
+    setCart((prev) =>
+      prev.map((i) =>
+        i.id === id
+          ? {
+              ...i,
+              cantidad
+            }
+          : i
       )
     );
+
   };
 
   /* ===============================
-     PDF
+     ENVIAR SOLICITUD
   =============================== */
-  const handleGenerarPDF = async () => {
-    if (cart.length === 0) return;
+  const handleEnviarSolicitud = async () => {
+  try {
+    if (cart.length === 0) {
+      alert("Debe agregar al menos un insumo");
+      return;
+    }
 
     setIsSubmitting(true);
-    const result = await generarPDF({ cart });
+
+    await enviarSolicitudFinal(cart, user);
+console.log(cart);
+    await generarPDF({ cart });
+
+    setIsSubmitted(true);
+
+    setTimeout(() => {
+      setCart([]);
+      setOpenedCart(false);
+      setIsSubmitted(false);
+    }, 2000);
+
+  } catch (error: any) {
+    console.error("ERROR COMPLETO:", error);
+    alert(error.response?.data?.message || error.message || "Error al enviar solicitud");
+  } finally {
     setIsSubmitting(false);
+  }
+};
 
-    if (result) {
-      setIsSubmitted(true);
-
-      setTimeout(() => {
-        setCart([]);
-        setOpenedCart(false);
-        setIsSubmitted(false);
-      }, 1500);
-    }
-  };
 
   return (
     <AppShell padding="md">
+
       <AppShell.Main>
 
-        {/* 🔝 HEADER */}
+        {/* HEADER */}
         <Group justify="apart" mb="lg">
-          <Text fw={700} size="xl">Dashboard</Text>
 
-          <Group>
-        
+          <Text fw={700} size="xl">
+            Dashboard
+          </Text>
 
-            {/* 🛒 CARRITO */}
-            <Indicator
-              label={cart.length}
-              size={16}
-              color="teal"
-              offset={4}
-              withBorder
-            >
-              <IconPackages
-                size={28}
-                style={{ cursor: "pointer" }}
-                onClick={() => setOpenedCart(true)}
-              />
-            </Indicator>
-          </Group>
+          <Indicator
+            label={cart.length}
+            size={16}
+            color="teal"
+            offset={4}
+            withBorder
+          >
+            <IconPackages
+              size={28}
+              style={{ cursor: "pointer" }}
+              onClick={() =>
+                setOpenedCart(true)
+              }
+            />
+          </Indicator>
+
         </Group>
 
-        {/* 📊 TABLA */}
+        {/* TABLA */}
         <Grid>
+
           <Grid.Col span={12}>
+
             <InventarioTable
               data={filtered}
               addToCart={addToCart}
@@ -148,29 +205,56 @@ export default function SolicitudesDashboard() {
             />
 
             {error && (
-              <Text c="red" ta="center">
+              <Text
+                c="red"
+                ta="center"
+              >
                 {error}
               </Text>
             )}
+
           </Grid.Col>
+
         </Grid>
 
-        {/* 🛒 DRAWER CARRITO */}
+        {/* DRAWER */}
         <Drawer
           opened={openedCart}
-          onClose={() => setOpenedCart(false)}
+          onClose={() =>
+            setOpenedCart(false)
+          }
           position="bottom"
           size="65%"
           radius="lg"
-          overlayProps={{ blur: 3 }}
+          overlayProps={{
+            blur: 3
+          }}
           withCloseButton={false}
         >
-          <Group justify="space-between" mb="md">
+
+          <Group
+            justify="space-between"
+            mb="md"
+          >
+
             <Group>
-              <ThemeIcon size="lg" radius="xl" color="teal" variant="light">
+
+              <ThemeIcon
+                size="lg"
+                radius="xl"
+                color="teal"
+                variant="light"
+              >
                 <IconPackages size={20} />
               </ThemeIcon>
-              <Text fw={700} size="lg">Nueva solicitud</Text>
+
+              <Text
+                fw={700}
+                size="lg"
+              >
+                Nueva solicitud
+              </Text>
+
             </Group>
 
             <ActionIcon
@@ -178,48 +262,85 @@ export default function SolicitudesDashboard() {
               color="red"
               size="lg"
               radius="xl"
-              onClick={() => setOpenedCart(false)}
+              onClick={() =>
+                setOpenedCart(false)
+              }
             >
               <IconX size={18} />
             </ActionIcon>
+
           </Group>
 
           {cart.length === 0 ? (
-            <Stack align="center" justify="center" h={200}>
-              <ThemeIcon size={60} radius="xl" variant="light" color="gray">
+
+            <Stack
+              align="center"
+              justify="center"
+              h={200}
+            >
+
+              <ThemeIcon
+                size={60}
+                radius="xl"
+                variant="light"
+                color="gray"
+              >
                 <IconPackages size={30} />
               </ThemeIcon>
 
-              <Text c="dimmed" fw={500}>
+              <Text
+                c="dimmed"
+                fw={500}
+              >
                 ¡Agregar insumos para generar una solicitud!
               </Text>
+
             </Stack>
+
           ) : (
+
             <CarritoSolicitud
               cart={cart}
               setCart={setCart}
               removeFromCart={removeFromCart}
               updateCantidad={updateCantidad}
-              generarPDF={handleGenerarPDF}
+              onEnviarSolicitud={handleEnviarSolicitud}
               isSubmitting={isSubmitting}
               isSubmitted={isSubmitted}
             />
+
           )}
 
           {isSubmitted && (
-            <Group justify="center" mt="md">
-              <ThemeIcon color="green" radius="xl" size="lg">
+
+            <Group
+              justify="center"
+              mt="md"
+            >
+
+              <ThemeIcon
+                color="green"
+                radius="xl"
+                size="lg"
+              >
                 <IconCheck size={18} />
               </ThemeIcon>
 
-              <Text c="green" fw={600}>
-                Solicitud generada correctamente
+              <Text
+                c="green"
+                fw={600}
+              >
+                Solicitud enviada correctamente
               </Text>
+
             </Group>
+
           )}
+
         </Drawer>
 
       </AppShell.Main>
+
     </AppShell>
   );
 }
