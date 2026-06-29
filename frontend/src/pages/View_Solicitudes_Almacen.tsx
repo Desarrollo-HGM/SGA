@@ -22,7 +22,7 @@ import CarritoSolicitud from "../components/solicitud/CarritoSolicitud";
 
 import { useInventario } from "../hooks/useInventario";
 import { enviarSolicitudFinal } from "../services/solicitudesService";
-import { generarPDF } from "../utils/generarPDF";
+import CampanaContainer from "../components/campana/CampanaContainer";
 
 import type { CartItem, Insumo } from "../types/global";
 import type { User } from "../types/User";
@@ -130,65 +130,66 @@ export default function SolicitudesDashboard() {
   /* ===============================
      ENVIAR SOLICITUD
   =============================== */
-  const handleEnviarSolicitud = async () => {
+const handleEnviarSolicitud = async (tipoSolicitud: string, justificacion: string) => {
   try {
-    if (cart.length === 0) {
-      alert("Debe agregar al menos un insumo");
-      return;
-    }
-
     setIsSubmitting(true);
-
-    await enviarSolicitudFinal(cart, user);
-console.log(cart);
-    await generarPDF({ cart });
-
+    
+    // 1. Se envía la petición a la API
+    await enviarSolicitudFinal(cart, user, tipoSolicitud, justificacion);
+    
+    // 2. Si es exitoso, marcamos como completado
     setIsSubmitted(true);
 
+    // 3. Agregamos un pequeño delay opcional para que el usuario vea el botón "Solicitud enviada" antes de borrarse todo
     setTimeout(() => {
-      setCart([]);
-      setOpenedCart(false);
-      setIsSubmitted(false);
-    }, 2000);
+      setCart([]);           // Limpia/Resetea el carrito de compras
+      setIsSubmitted(false); // Resetea el estado del botón flotante
+    }, 1500);
 
-  } catch (error: any) {
-    console.error("ERROR COMPLETO:", error);
-    alert(error.response?.data?.message || error.message || "Error al enviar solicitud");
+  } catch (error) {
+    console.error("Error al enviar la solicitud:", error);
+    // Aquí puedes agregar una notificación de error con @mantine/notifications si usas el paquete
   } finally {
     setIsSubmitting(false);
   }
 };
-
 
   return (
     <AppShell padding="md">
 
       <AppShell.Main>
 
-        {/* HEADER */}
-        <Group justify="apart" mb="lg">
+{/* ================= HEADER ================= */}
+<Group justify="flex-start" align="center" gap="xs" mb="lg">
+  
+  {/* 1. Título Dashboard */}
+  <Text fw={700} size="xl" c="gray.7" style={{ marginRight: "10px" }}>
+  Solicitudes
+</Text>
 
-          <Text fw={700} size="xl">
-            Dashboard
-          </Text>
+  {/* 2. 🔔 CAMPANA (DESACOPLADA) */}
+  <CampanaContainer /> 
 
-          <Indicator
-            label={cart.length}
-            size={16}
-            color="teal"
-            offset={4}
-            withBorder
-          >
-            <IconPackages
-              size={28}
-              style={{ cursor: "pointer" }}
-              onClick={() =>
-                setOpenedCart(true)
-              }
-            />
-          </Indicator>
+  {/* 3. CARRITO DE COMPRAS */}
+  <Indicator
+    label={cart.length}
+    size={16}
+    color="teal"
+    offset={4}
+    withBorder
+    disabled={cart.length === 0}
+  >
+    <IconPackages
+      size={28}
+      style={{ cursor: "pointer", display: "block" }}
+      onClick={() => setOpenedCart(true)}
+    />
+  </Indicator>
 
-        </Group>
+</Group>
+
+
+
 
         {/* TABLA */}
         <Grid>

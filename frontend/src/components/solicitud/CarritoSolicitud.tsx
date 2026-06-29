@@ -7,17 +7,18 @@ import {
   Badge,
   Textarea,
   Modal,
+  SimpleGrid
 } from "@mantine/core";
 
 import {
   IconTrash,
   IconFileInvoice,
   IconCheck,
+   IconBuildingWarehouse, IconShieldCheck
 } from "@tabler/icons-react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // 1. Importamos useEffect
 import type { CartItem } from "../../types/global";
-import type { User } from "../../types/User";
 import type { Dispatch, SetStateAction } from "react";
 
 interface Props {
@@ -25,12 +26,11 @@ interface Props {
   updateCantidad: (id: number, cantidad: number) => void;
   removeFromCart: (id: number) => void;
   setCart: Dispatch<SetStateAction<CartItem[]>>;
-  onEnviarSolicitud: () => void;
+  // 2. Modificamos el callback para que envíe los nuevos datos al componente padre
+  onEnviarSolicitud: (tipoSolicitud: string, justificacion: string) => void;
   isSubmitting: boolean;
   isSubmitted: boolean;
 }
-
-const user: User = JSON.parse(localStorage.getItem("user") || "{}");
 
 export default function CarritoSolicitud({
   cart,
@@ -42,7 +42,25 @@ export default function CarritoSolicitud({
 }: Props) {
   const [justificacionGeneral, setJustificacionGeneral] = useState("");
   const [destino, setDestino] = useState<"central" | "guarda" | null>(null);
+  const [tipoSolicitud, setTipoSolicitud] = useState(""); // 3. Estado para el tipo de solicitud
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (cart.length === 0) {
+      setDestino(null);
+      setJustificacionGeneral("");
+      setTipoSolicitud("");
+    }
+  }, [cart]);
+
+  // 4. Efecto para cambiar automáticamente el tipo de solicitud según el destino
+  useEffect(() => {
+    if (destino === "central") {
+      setTipoSolicitud("ReabastecimientoManual");
+    } else if (destino === "guarda") {
+      setTipoSolicitud("Clinica");
+    }
+  }, [destino]);
 
   const requiereJustificacion =
     destino === "central" &&
@@ -59,29 +77,61 @@ export default function CarritoSolicitud({
   return (
     <>
       {/* ================= MODAL ================= */}
-      <Modal
-        opened={destino === null}
-        onClose={() => {}}
-        withCloseButton={false}
-        centered
-        title="Seleccione destino de la solicitud"
-      >
-        <Button
-          fullWidth
-          mb="sm"
-          color="blue"
-          onClick={() => setDestino("central")}
-        >
-          Almacén Central
-        </Button>
-        <Button
-          fullWidth
-          color="orange"
-          onClick={() => setDestino("guarda")}
-        >
-          Guarda
-        </Button>
-      </Modal>
+     <Modal
+  opened={destino === null}
+  onClose={() => {}}
+  withCloseButton={false}
+  centered
+  radius="lg"
+  padding="xl"
+  overlayProps={{
+    blur: 4,
+    opacity: 0.55,
+  }}
+  title={
+    <Text fw={700} size="lg" c="dimmed" style={{ letterSpacing: "0.5px" }}>
+      DESTINO DE LA SOLICITUD
+    </Text>
+  }
+>
+  <Text size="sm" c="dimmed" mb="xl" ta="center">
+    Por favor, seleccione el almacén de destino para procesar los insumos de este pedido.
+  </Text>
+
+  <SimpleGrid cols={2} spacing="md">
+    <Button
+      variant="light"
+      color="blue"
+      size="xl"
+      radius="md"
+      h={100}
+      styles={{
+        root: { flexDirection: "column", gap: "8px" },
+        inner: { flexDirection: "column" }
+      }}
+      leftSection={<IconBuildingWarehouse size={32} stroke={1.5} />}
+      onClick={() => setDestino("central")}
+    >
+      <Text fw={600} size="sm">Almacén Central</Text>
+    </Button>
+
+    <Button
+      variant="light"
+      color="orange"
+      size="xl"
+      radius="md"
+      h={100}
+      styles={{
+        root: { flexDirection: "column", gap: "8px" },
+        inner: { flexDirection: "column" }
+      }}
+      leftSection={<IconShieldCheck size={32} stroke={1.5} />}
+      onClick={() => setDestino("guarda")}
+    >
+      <Text fw={600} size="sm">Guarda</Text>
+    </Button>
+  </SimpleGrid>
+</Modal>
 
       <Card
         withBorder
@@ -96,6 +146,18 @@ export default function CarritoSolicitud({
         <Badge color="blue" variant="light" mb="md">
           Fecha solicitud: {new Date().toLocaleString("es-MX")}
         </Badge>
+
+        {/* ================= TIPO DE SOLICITUD (NUEVO INPUT) ================= */}
+        {destino && (
+          <TextInput
+            label="Tipo de Solicitud"
+            value={tipoSolicitud}
+            readOnly // Evita que el usuario lo modifique escribiendo
+            variant="filled" // Le da un aspecto visual de campo deshabilitado/automático
+            mb="md"
+            fw={600}
+          />
+        )}
 
         {/* ================= JUSTIFICACIÓN GENERAL ================= */}
         {requiereJustificacion && (
@@ -223,31 +285,29 @@ export default function CarritoSolicitud({
       </Card>
 
       {/* ================= BOTÓN FLOTANTE ================= */}
-
-<div
-  style={{
-    position: "fixed",
-    bottom: 20,
-    right: 20,
-  }}
->
-  <Button
-    radius="xl"
-    size="md"
-    loading={isSubmitting}
-    disabled={isSubmitting || isSubmitted || cart.length === 0}
-    color={isSubmitted ? "teal" : "green"}
-    variant={isSubmitted ? "filled" : "light"}
-    leftSection={
-      isSubmitted ? <IconCheck size={18} /> : <IconFileInvoice size={18} />
-    }
-    onClick={onEnviarSolicitud}
-  >
-    {isSubmitted ? "Solicitud enviada" : "Generar solicitud"}
-  </Button>
-</div>
-
+      <div
+        style={{
+          position: "fixed",
+          bottom: 20,
+          right: 20,
+        }}
+      >
+        <Button
+          radius="xl"
+          size="md"
+          loading={isSubmitting}
+          disabled={isSubmitting || isSubmitted || cart.length === 0}
+          color={isSubmitted ? "teal" : "green"}
+          variant={isSubmitted ? "filled" : "light"}
+          leftSection={
+            isSubmitted ? <IconCheck size={18} /> : <IconFileInvoice size={18} />
+          }
+          // 5. Enviamos las variables locales en la función submit
+          onClick={() => onEnviarSolicitud(tipoSolicitud, justificacionGeneral)}
+        >
+          {isSubmitted ? "Solicitud enviada" : "Generar solicitud"}
+        </Button>
+      </div>
     </>
   );
 }
- 

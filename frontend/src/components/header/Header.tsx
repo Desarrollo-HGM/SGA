@@ -32,7 +32,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import classes from '../../styles/HeaderMegaMenu.module.css';
 import '@mantine/core/styles.css';
 import type { TablerIcon } from '@tabler/icons-react';
-import CampanaContainer from "../campana/CampanaContainer";
+
 type NavItem = {
   icon: TablerIcon;
   title: string;
@@ -155,9 +155,9 @@ export function HeaderMegaMenu() {
           <Group visibleFrom="sm">
             {user ? (
               <>
-               <CampanaContainer /> {/* 🔔 CAMPANA (DESACOPLADA) */}
+              
                 <Text size="sm" fw={500} c="dimmed">
-                  {user.nombreCompleto} ({user.role})
+                  {user.nombreCompleto} ({user.rol})
                 </Text>
                 <Button
                   variant="filled"
@@ -196,7 +196,7 @@ export function HeaderMegaMenu() {
           <Group justify="center" grow pb="xl" px="md">
             {user ? (
               <>
-                <Text ta="center" size="sm">{user.nombreCompleto} ({user.role})</Text>
+                <Text ta="center" size="sm">{user.nombreCompleto} ({user.rol})</Text>
                 <Button variant="filled" color="red" onClick={handleLogout}>Salir</Button>
               </>
             ) : (

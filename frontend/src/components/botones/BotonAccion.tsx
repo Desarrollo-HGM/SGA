@@ -3,8 +3,8 @@ import {
   IconCheck,
   IconPlus,
   IconX,
-  IconBan,
-  IconPackage
+  IconBan
+
 } from "@tabler/icons-react";
 
 import type { Insumo, CartItem } from "../../types/global";
@@ -24,7 +24,7 @@ export default function BotonAccion({
   cart,
   addToCart,
   removeFromCart,
-  onSurtir
+
 }: Props) {
   const [hover, setHover] = useState(false);
 
@@ -77,18 +77,7 @@ export default function BotonAccion({
         {label}
       </Button>
 
-      {!sinStock && onSurtir && (
-        <Button
-          size="xs"
-          radius="md"
-          color="green"
-          variant="light"
-          leftSection={<IconPackage size={14} />}
-          onClick={() => onSurtir(record)}
-        >
-          Surtir
-        </Button>
-      )}
+    
     </Group>
   );
 }
