@@ -12,12 +12,13 @@ import { IconEye } from "@tabler/icons-react";
 import { useState } from "react";
 
 import ModalDetalleSolicitud from "./ModalDetalleSolicitud";
-import type { Solicitud as SolicitudBase } from "../../services/solicitudes";
+// Importamos la interfaz Solicitud directamente para garantizar compatibilidad de tipos
+import type { Solicitud } from "../../services/solicitudes"; 
 
 /* ================= TIPOS ================= */
 
 interface Props {
-  data: SolicitudBase[];
+  data: Solicitud[]; // <-- Actualizado con tu nueva interfaz global
 }
 
 /* ================= COMPONENTE ================= */
@@ -36,8 +37,9 @@ export default function CampanaSolicitudes({ data }: Props) {
 
   /* ================= UTILS ================= */
 
+  // Ajustado para evaluar strings con mayúsculas/minúsculas sin romperse
   const getColor = (estado: string) => {
-    switch (estado) {
+    switch (estado?.toLowerCase()) {
       case "pendiente": return "yellow";
       case "cancelada": return "red";
       case "surtida": return "green";
@@ -58,14 +60,15 @@ export default function CampanaSolicitudes({ data }: Props) {
         background: "#f8fbfd"
       }}
     >
-
-      {/* 🔥 SCROLL para muchas solicitudes */}
+      {/*  SCROLL para muchas solicitudes */}
       <ScrollArea h={400}>
 
         <Table striped highlightOnHover withTableBorder>
           <thead style={{ backgroundColor: "#0b6fa4", color: "white" }}>
-            <tr>
+           <tr>
               <th style={{ textAlign: "center" }}>ID</th>
+              <th style={{ textAlign: "center" }}>Fecha</th>
+              <th style={{ textAlign: "center" }}>Requisitor</th>
               <th style={{ textAlign: "center" }}>Servicio</th>
               <th style={{ textAlign: "center" }}>Subalmacén</th>
               <th style={{ textAlign: "center" }}>Estado</th>
@@ -77,29 +80,39 @@ export default function CampanaSolicitudes({ data }: Props) {
             {data.length === 0 ? (
               <tr>
                 <td colSpan={5}>
-                  <Text c="dimmed" ta="center">
-                    Sin solicitudes
+                  <Text c="dimmed" ta="center" py="md">
+                    Sin solicitudes encontradas
                   </Text>
                 </td>
               </tr>
             ) : (
               data.map((sol) => (
-                <tr key={sol.id_solicitud}>
-                  <td style={{ textAlign: "center" }}>
-                    {sol.id_solicitud}
+               <tr key={sol.id_solicitudes}>
+                  <td style={{ textAlign: "center", fontWeight: 600 }}>
+                    {sol.id_solicitudes}
                   </td>
 
                   <td style={{ textAlign: "center" }}>
-                    {sol.servicio}
+                    {new Date(sol.fecha_solicitud).toLocaleDateString("es-MX")}
                   </td>
 
                   <td style={{ textAlign: "center" }}>
-                    {sol.subalmacen}
+                    {sol.nombre_requisitor}
                   </td>
+
+                  <td style={{ textAlign: "center" }}>
+                    {sol.nombre_servicio}
+                  </td>
+
+                  <td style={{ textAlign: "center" }}>
+                    {sol.nombre_subalmacen}
+                  </td>
+                         
+               
 
                   <td style={{ textAlign: "center" }}>
                     <Badge color={getColor(sol.estado)} variant="light">
-                      {sol.estado.toUpperCase()}
+                      {sol.estado ? sol.estado.toUpperCase() : "DESCONOCIDO"}
                     </Badge>
                   </td>
 
@@ -111,7 +124,7 @@ export default function CampanaSolicitudes({ data }: Props) {
                         variant="light"
                         color="blue"
                         leftSection={<IconEye size={14} />}
-                        onClick={() => openDetalle(sol.id_solicitud)}
+                        onClick={() => openDetalle(sol.id_solicitudes)}
                       >
                         Detalle
                       </Button>
@@ -125,7 +138,7 @@ export default function CampanaSolicitudes({ data }: Props) {
 
       </ScrollArea>
 
-      {/* 🔥 MODAL */}
+      {/*  MODAL */}
       <ModalDetalleSolicitud
         opened={modalDetalle}
         onClose={() => setModalDetalle(false)}

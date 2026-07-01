@@ -1,15 +1,17 @@
-export interface ItemPDF {
-  insumo: string;
+export interface InsumoPDF {
+  id_detalle: number;
+  id_insumos: number;
+  descripcion: string;
   cantidad: number;
-  lote?: string;
-  stock?: number;
-  maximo?: number;
-  justificacion?: string;
+  solicitado: number;
+  id_lote: number | string;
+  estado: string;
+  nombre_almacen: string;
 }
 
 export interface DatosPDF {
-  cart: ItemPDF[];
-  quienSurte?: string;
-  quienRecibe?: string;
-  lote?: string;
+  cart: InsumoPDF[];
+  quienSurte: string;
+  quienRecibe: string;
+  justificacion_parcial?: string | null;
 }

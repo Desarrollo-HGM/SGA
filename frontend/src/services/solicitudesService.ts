@@ -15,7 +15,7 @@ export const enviarSolicitudFinal = async (
 
   // 3. Construimos el payload con las variables dinámicas
   const payload = {
-    tipo_solicitud: tipoSolicitud, // <-- Reemplaza el string fijo "Clinica"
+    tipo_solicitud: tipoSolicitud, 
     id_medico: user.id,
     id_servicio: cart[0].id_servicio,
     id_subalmacen: cart[0].id_subalmacen,
