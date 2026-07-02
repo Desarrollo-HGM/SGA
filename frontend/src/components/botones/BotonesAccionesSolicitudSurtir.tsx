@@ -53,5 +53,5 @@ export default function AccionesSolicitud({
         Cancelar solicitud
       </Button>
     </Group>
-  );
-} 
+  ); 
+}  
