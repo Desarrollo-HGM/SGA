@@ -42,7 +42,7 @@ export const useInventario = () => {
 
   useEffect(() => {
     fetchInventario();
-    const interval = setInterval(fetchInventario, 3000); // 🔥 actualiza cada 3 segundos
+    const interval = setInterval(fetchInventario, 3000); //  actualiza cada 3 segundos
     return () => clearInterval(interval);
   }, []);
 

@@ -110,6 +110,7 @@ export default function InventarioTable({
           <Badge color="blue" variant="light">{filteredData.length} insumos</Badge>
         </Group>
 
+        
         {/* FILTROS */}
         <Grid mb="md">
           <Grid.Col span={2}><TextInput placeholder="Clave" value={filters.clave} onChange={e => handleFilterChange("clave", e.currentTarget.value)} /></Grid.Col>
@@ -119,6 +120,7 @@ export default function InventarioTable({
           <Grid.Col span={2}><TextInput placeholder="Servicio" value={filters.servicio} onChange={e => handleFilterChange("servicio", e.currentTarget.value)} /></Grid.Col>
           <Grid.Col span={1}><TextInput placeholder="Sub" value={filters.subalmacen} onChange={e => handleFilterChange("subalmacen", e.currentTarget.value)} /></Grid.Col>
         </Grid>
+
 
         {/* TABLA */}
         <ScrollArea h={500} viewportRef={viewportRef} onScrollPositionChange={handleScroll}>
