@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
   const savedToken = localStorage.getItem("token");
   const savedUser = localStorage.getItem("user");
-  console.log("🔄 AuthContext.useEffect inicial:", { savedToken, savedUser });
+ 
 
   if (savedToken) {
     validateToken()
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (res.valid) {
           setToken(savedToken);
           if (savedUser) setUser(JSON.parse(savedUser));
-          console.log("✅ Token válido, usuario restaurado:", JSON.parse(savedUser || "{}"));
+          
         } else {
           logout();
         }
@@ -44,12 +44,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
   const { token, user } = await loginService(username, password);
-  console.log("📥 AuthContext.login recibido:", { user, token }); // 👈 log recibido del servicio
+  
   setUser(user);
   setToken(token);
   localStorage.setItem("token", token);
   localStorage.setItem("user", JSON.stringify(user));
-  console.log("💾 AuthContext.login guardado en estado:", { user, token }); // 👈 log guardado
+  
   return { user, token };
 };
 

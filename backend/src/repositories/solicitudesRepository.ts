@@ -79,7 +79,6 @@ export const solicitudesRepository = {
       .join('cat_servicios as s', 'so.id_servicio', 's.id_servicios')
       .join('subalmacenes as sa', 'so.id_subalmacen', 'sa.id_subalmacen')
       .leftJoin('cat_medicos as m', 'so.id_medico', 'm.id_medico')
-      .where('so.tipo_solicitud', tipo_solicitud) // <-- Filtro dinámico principal
       .select(
         'so.id_solicitudes',
         'so.tipo_solicitud',
@@ -93,9 +92,11 @@ export const solicitudesRepository = {
         'so.id_medico',
         db.raw("CONCAT(COALESCE(m.nombre, ''), ' ', COALESCE(m.apaterno, ''), ' ', COALESCE(m.amaterno, '')) as nombre_requisitor")
       );
-
+ 
+  
     if (estado) query = query.where('so.estado', estado);
     if (id_subalmacen) query = query.where('so.id_subalmacen', id_subalmacen);
+    if (tipo_solicitud) query = query.where('so.tipo_solicitud', tipo_solicitud);
 
     return await query;
   } catch (err: any) {
@@ -132,13 +133,15 @@ export const solicitudesRepository = {
 
       const detalles = await db('solicitudes_detalle as sd')
         .join('cat_insumos as i', 'sd.id_insumos', 'i.id_insumos')
+         .join('almacenes as al', 'i.id_almacen', 'al.id_almacen')
         .select(
           'sd.id_detalle',
           'sd.id_insumos',
           'i.descripcion_corta as descripcion',
           'sd.cantidad',
           'sd.id_lote',
-          'sd.estado'
+          'sd.estado',
+           'al.nombre_almacen as nombre_almacen' 
         )
         .where('sd.id_solicitudes', id_solicitudes);
 

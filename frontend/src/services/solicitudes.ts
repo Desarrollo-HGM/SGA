@@ -1,38 +1,53 @@
+import api from "../config/api";
 
+/* ================= INTERFACES ================= */
+
+// 1. Interfaz para la cabecera general de las solicitudes
 export interface Solicitud {
-  id_solicitud: number;
-  cantidad: number;
+  id_solicitudes: number;
   tipo_solicitud: string;
   fecha_solicitud: string;
-  requisitante: string;
-  servicio: string;
-  insumo: string;
-  subalmacen: string;
-  estado: "pendiente" | "surtida" | "cancelada";
-  lote: string;
-  justificacion?: string;
+  estado: "Pendiente" | "Surtida" | "Cancelada" | string;
+  justificacion: string | null;
+  id_servicio: number;
+  nombre_servicio: string;
+  id_subalmacen: number;
+  nombre_subalmacen: string;
+  id_medico: number;
+  nombre_requisitor: string;
 }
 
-// 🔥 Simulación tipo backend
+// 2. Interfaz para los insumos contenidos dentro del detalle de una solicitud
+export interface InsumoSolicitado {
+  id_insumos: number;
+  clave: string;
+  insumo: string;
+  tipo_insumo: string;
+  unidad_distribucion: string;
+  stock: number;
+  cantidad: number; // Cantidad solicitada originalmente por el médico
+}
+
+// 3. Interfaz extendida para la respuesta del detalle completo
+export interface DetalleSolicitudResponse extends Solicitud {
+  insumos: InsumoSolicitado[];
+}
+
+/* ================= FUNCIONES API ================= */
+
+/**
+ * Obtiene el listado completo de solicitudes del backend
+ */
 export const getSolicitudes = async (): Promise<Solicitud[]> => {
-  await new Promise((res) => setTimeout(res, 500)); // delay fake
+  const response = await api.get("/api/solicitudes");
+  return response.data;
+};
 
-  const estados = ["pendiente", "surtida", "cancelada"] as const;
-  const servicios = ["Urgencias", "UCI", "Pediatría", "Quirófano"];
-
-  return Array.from({ length: 8 }).map((_, i) => ({
-    id_solicitud: i + 1,
-    cantidad: Math.floor(Math.random() * 10) + 1,
-    tipo_solicitud: "Ordinaria",
-    fecha_solicitud: new Date(
-      Date.now() - Math.random() * 100000000
-    ).toISOString(),
-    requisitante: "Dr. García",
-    servicio: servicios[Math.floor(Math.random() * servicios.length)],
-    insumo: `Insumo ${i + 1}`,
-    subalmacen: "Central",
-    estado: estados[Math.floor(Math.random() * estados.length)],
-    lote: "L-" + (1000 + i),
-    justificacion: "Uso clínico"
-  }));
+/**
+ * Obtiene la información específica y los insumos de una sola solicitud por su ID
+ * Endpoint real consumido: /api/solicitudes/:id
+ */
+export const getDetalleSolicitud = async (id: number): Promise<DetalleSolicitudResponse> => {
+  const response = await api.get(`/api/solicitudes/${id}`);
+  return response.data;
 };

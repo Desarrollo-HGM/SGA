@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/UserRepository.js";
 import { logger } from "../config/logger.js";
 
-const ACCESS_EXPIRATION = "3600m"; // token corto
+const ACCESS_EXPIRATION = "15m"; // token corto
 const INACTIVITY_LIMIT = 2 * 60 * 60 * 1000; // 2 horas en ms
 
 const generateAccessToken = (user: any) => {

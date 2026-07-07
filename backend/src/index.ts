@@ -49,14 +49,14 @@ app.get('/', async (_req, res) => {
     logger.error("[Server] Error de conexión DB", { error: error.message });
     res.status(500).json({ error: 'Error al conectar con la base de datos' });
   }
-});
+}); 
 
 // ✅ Protegemos las rutas de API con authMiddleware
-app.use("/api/insumos", authMiddleware, requireRole(["admins", "solicitante", "guarda", "almacen"]), insumosRoutes);
-app.use("/api/lotes", authMiddleware, requireRole(["admins", "almacen"]), lotesRoutes);
-app.use("/api/movimientos", authMiddleware, requireRole(["admins", "almacen"]), movimientosRoutes);
-app.use("/api/solicitudes", authMiddleware, requireRole(["admins", "almacen", "auditor"]), solicitudesRoutes);
-app.use(  "/api/stock",  authMiddleware,  requireRole(["admins", "almacen", "auditor"]),  stockRoutes);
+app.use("/api/insumos", authMiddleware, requireRole(["Administrador", "Almacen"]), insumosRoutes);
+app.use("/api/lotes", authMiddleware, requireRole(["Administrador", "Almacen"]), lotesRoutes);
+app.use("/api/movimientos", authMiddleware, requireRole(["Administrador", "Almacen"]), movimientosRoutes);
+app.use("/api/solicitudes", authMiddleware, requireRole(["Administrador", "Almacen", "Auditor"]), solicitudesRoutes);
+app.use(  "/api/stock",  authMiddleware,  requireRole(["Administrador", "Almacen", "Auditor"]),  stockRoutes);
 app.use('/api', surtirRoutes);
 app.listen(PORT, '0.0.0.0', () => {
  logger.info(`[Server] Servidor backend escuchando en red en puerto ${PORT}`);
