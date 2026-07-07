@@ -54,4 +54,4 @@ export default function AccionesSolicitud({
       </Button>
     </Group>
   ); 
-}   
+}    
