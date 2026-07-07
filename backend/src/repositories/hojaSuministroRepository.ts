@@ -1,3 +1,4 @@
+//src/repositories/hojaSuministroRepository.ts
 import { db } from '../config/db.js';
 import type { EstadoHojaDetalle, EstadoReserva, EstadoDetalle, EstadoSolicitud } from '../models/solicitud.js';
 

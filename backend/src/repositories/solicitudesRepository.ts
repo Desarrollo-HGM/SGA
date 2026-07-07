@@ -1,6 +1,6 @@
 // src/repositories/solicitudesRepository.ts
 import { db } from '../config/db.js';
-import { logger } from '../config/logger.js'; // Usamos tu logger para consistencia
+import { logger } from '../config/logger.js';
 import type { Solicitud, SolicitudDetalle } from '../models/solicitud.js';
 import { format } from 'date-fns';
 
@@ -73,12 +73,13 @@ export const solicitudesRepository = {
   },
 
   // Listar solicitudes
-  async getSolicitudes(estado?: string, id_subalmacen?: number, tipo_solicitud?: string) {
+  async getSolicitudes(tipo_solicitud: string, estado?: string, id_subalmacen?: number) {
   try {
     let query = db('solicitudes as so')
       .join('cat_servicios as s', 'so.id_servicio', 's.id_servicios')
       .join('subalmacenes as sa', 'so.id_subalmacen', 'sa.id_subalmacen')
       .leftJoin('cat_medicos as m', 'so.id_medico', 'm.id_medico')
+      .where('so.tipo_solicitud', tipo_solicitud) // <-- Filtro dinámico principal
       .select(
         'so.id_solicitudes',
         'so.tipo_solicitud',
@@ -95,15 +96,14 @@ export const solicitudesRepository = {
 
     if (estado) query = query.where('so.estado', estado);
     if (id_subalmacen) query = query.where('so.id_subalmacen', id_subalmacen);
-    if (tipo_solicitud) query = query.where('so.tipo_solicitud', tipo_solicitud);
 
     return await query;
   } catch (err: any) {
     logger.error("[SolicitudesRepository] Error en getSolicitudes", { error: err.message });
     throw err;
   }
-}
-,
+},
+        
 
   // Obtener detalle por ID
   async getSolicitudById(id_solicitudes: number) {
