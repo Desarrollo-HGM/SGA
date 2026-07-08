@@ -16,7 +16,7 @@ export const requireRole = (
 
     const { rol } = req.user;
 
-    // ✅ Admin siempre pasa
+    
     if (rol === "admin") {
       return next();
     }

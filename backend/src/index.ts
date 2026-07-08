@@ -52,11 +52,11 @@ app.get('/', async (_req, res) => {
 }); 
 
 // ✅ Protegemos las rutas de API con authMiddleware
-app.use("/api/insumos", authMiddleware, requireRole(["Administrador", "Almacen"]), insumosRoutes);
-app.use("/api/lotes", authMiddleware, requireRole(["Administrador", "Almacen"]), lotesRoutes);
-app.use("/api/movimientos", authMiddleware, requireRole(["Administrador", "Almacen"]), movimientosRoutes);
-app.use("/api/solicitudes", authMiddleware, requireRole(["Administrador", "Almacen", "Auditor"]), solicitudesRoutes);
-app.use(  "/api/stock",  authMiddleware,  requireRole(["Administrador", "Almacen", "Auditor"]),  stockRoutes);
+app.use("/api/insumos", authMiddleware, requireRole(["admin", "guarda", "almacen", "solicitante"]), insumosRoutes);
+app.use("/api/lotes", authMiddleware, requireRole(["admin", "guarda", "almacen", "solicitante"]), lotesRoutes);
+app.use("/api/movimientos", authMiddleware, requireRole(["admin", "guarda", "almacen", "solicitante"]), movimientosRoutes);
+app.use("/api/solicitudes", authMiddleware, requireRole(["admin", "guarda", "almacen", "solicitante"]), solicitudesRoutes);
+app.use(  "/api/stock",  authMiddleware,  requireRole(["admin", "guarda", "almacen", "solicitante"]),  stockRoutes);
 app.use('/api', surtirRoutes);
 app.listen(PORT, '0.0.0.0', () => {
  logger.info(`[Server] Servidor backend escuchando en red en puerto ${PORT}`);
