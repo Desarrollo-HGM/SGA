@@ -15,25 +15,26 @@ export const solicitudesController = {
     }
   },
 
-  // GET /api/solicitudes
-  // GET /api/solicitudes
+  
 async getAll(req: Request, res: Response) {
   try {
     const { estado, id_subalmacen, tipo_solicitud } = req.query;
 
-    const result = await solicitudesService.listarSolicitudes(
-      estado as string,
-      id_subalmacen ? Number(id_subalmacen as string) : undefined, // ✅ conversión segura
-      tipo_solicitud as string
-    );
+    // Lógica de negocio/vista: Si no especifican tipo_solicitud, definimos una por defecto (ej: 'Clinica')
+    const tipoFinal = (tipo_solicitud as string) || 'Clinica';
 
+    const result = await solicitudesService.listarSolicitudes(
+      tipoFinal, 
+      estado as string,
+      id_subalmacen ? Number(id_subalmacen) : undefined
+    );
+    
     res.json(result);
   } catch (error: any) {
     logger.error("[SolicitudesController] Error en getAll", { error: error.message });
-    res.status(500).json({ success: false, message: "Error al listar solicitudes" });
+    res.status(500).json({ success: false, message: 'Error al listar solicitudes' });
   }
-}
-
+},
 
   // GET /api/solicitudes/:id
   async getById(req: Request, res: Response) {

@@ -17,7 +17,7 @@ export interface Solicitud {
   fecha_solicitud: string | Date;   // se guarda como YYYY-MM-DD
   id_medico?: number | null;        // requisitante (por ahora cat_medicos)
   id_servicio: number;
-  id_subalmacen: number;
+  id_subalmacen?: number;
   justificacion?: string | null;
   estado?: "Pendiente" | "Aprobada" | "Rechazada" | "Completada";
 }
