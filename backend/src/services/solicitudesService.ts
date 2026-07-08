@@ -49,10 +49,13 @@ export const solicitudesService = {
     }
   },
 
-  async listarSolicitudes(estado?: string, id_subalmacen?: number, tipo_solicitud?: string) {
-    logger.debug("[SolicitudesService] Listando solicitudes con filtros", { estado, id_subalmacen, tipo_solicitud });
-    return await solicitudesRepository.getSolicitudes(estado, id_subalmacen, tipo_solicitud);
-  },
+
+async listarSolicitudes(tipo_solicitud: string, estado?: string, id_subalmacen?: number) {
+  logger.debug("[SolicitudesService] Listando solicitudes con filtros", { tipo_solicitud, estado, id_subalmacen });
+  
+
+  return await solicitudesRepository.getSolicitudes(tipo_solicitud, estado, id_subalmacen);
+},
 
   async detalleSolicitud(id_solicitudes: number) {
     logger.debug("[SolicitudesService] Obteniendo detalle de solicitud", { id_solicitudes });
