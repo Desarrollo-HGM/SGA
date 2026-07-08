@@ -24,7 +24,7 @@ import {
 
 export default function Login() {
 
-  const { login, user, token } = useAuth();
+  const { user, token, login } = useAuth();
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");

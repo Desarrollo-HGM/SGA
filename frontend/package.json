@@ -30,6 +30,7 @@
     "react-plotly.js": "^2.6.0",
     "react-qr-code": "^2.0.18",
     "react-router-dom": "^6.30.2",
+    "sweetalert2": "^11.26.25",
     "zod": "^3.25.76"
   },
   "devDependencies": {

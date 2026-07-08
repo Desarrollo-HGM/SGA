@@ -9,27 +9,34 @@ export const solicitudesController = {
     try {
       const result = await solicitudesService.crearSolicitudFinal(req.body);
       res.status(201).json(result);
-    } catch (error: any) {
+    } catch (error: any) { 
       logger.error("[SolicitudesController] Error en create", { error: error.message });
       res.status(500).json({ success: false, message: error.message || 'Error al crear solicitud' });
     }
   },
 
   // GET /api/solicitudes
-  async getAll(req: Request, res: Response) {
-    try {
-      const { estado, id_subalmacen, tipo_solicitud } = req.query;
-      const result = await solicitudesService.listarSolicitudes(
-        estado as string,
-        id_subalmacen ? Number(id_subalmacen) : undefined,
-        tipo_solicitud as string
-      );
-      res.json(result);
-    } catch (error: any) {
-      logger.error("[SolicitudesController] Error en getAll", { error: error.message });
-      res.status(500).json({ success: false, message: 'Error al listar solicitudes' });
-    }
-  },
+  // GET /api/solicitudes
+async getAll(req: Request, res: Response) {
+  try {
+    const { estado, id_subalmacen, tipo_solicitud } = req.query;
+
+    // Lógica de negocio/vista: Si no especifican tipo_solicitud, definimos una por defecto (ej: 'Clinica')
+    const tipoFinal = (tipo_solicitud as string) || 'Clinica';
+
+    const result = await solicitudesService.listarSolicitudes(
+  estado as string,
+  id_subalmacen ? Number(id_subalmacen) : undefined,
+  tipo_solicitud as string
+);
+
+    
+    res.json(result);
+  } catch (error: any) {
+    logger.error("[SolicitudesController] Error en getAll", { error: error.message });
+    res.status(500).json({ success: false, message: 'Error al listar solicitudes' });
+  }
+},
 
   // GET /api/solicitudes/:id
   async getById(req: Request, res: Response) {

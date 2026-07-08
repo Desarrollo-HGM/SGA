@@ -1,7 +1,7 @@
 // src/context/AuthContext.tsx
-import { createContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { login as loginService, validateToken } from "../services/auth";
-import type { User } from "../types/User"; // define la interfaz con role
+import type { User } from "../types/User"; // interfaz con id y rol
 
 interface AuthContextType {
   user: User | null;
@@ -10,49 +10,43 @@ interface AuthContextType {
   logout: () => void;
 }
 
-export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
+  // Restaurar sesión desde localStorage
   useEffect(() => {
-  const savedToken = localStorage.getItem("token");
-  const savedUser = localStorage.getItem("user");
- 
+    const savedToken = localStorage.getItem("token");
+    const savedUser = localStorage.getItem("user");
 
-  if (savedToken) {
-    validateToken()
-      .then((res) => {
-        console.log("🔍 validateToken resultado:", res);
-        if (res.valid) {
-          setToken(savedToken);
-          if (savedUser) setUser(JSON.parse(savedUser));
-          
-        } else {
-          logout();
-        }
-      })
-      .catch((err) => {
-        console.error("❌ Error en validateToken:", err);
-        logout();
-      });
-  }
-}, []);
+    if (savedToken) {
+      validateToken()
+        .then((res) => {
+          if (res.valid) {
+            setToken(savedToken);
+            if (savedUser) setUser(JSON.parse(savedUser));
+          } else {
+            logout();
+          }
+        })
+        .catch(() => logout());
+    }
+  }, []);
 
-
+  // Login usando el servicio
   const login = async (username: string, password: string) => {
-  const { token, user } = await loginService(username, password);
-  
-  setUser(user);
-  setToken(token);
-  localStorage.setItem("token", token);
-  localStorage.setItem("user", JSON.stringify(user));
-  
-  return { user, token };
-};
+    const { accessToken, user } = await loginService(username, password);
 
+    setUser(user);
+    setToken(accessToken);
+
+    localStorage.setItem("token", accessToken);
+    localStorage.setItem("user", JSON.stringify(user));
+
+    return { user, token: accessToken };
+  };
 
   const logout = () => {
     setUser(null);
@@ -66,4 +60,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
+};
+
+// Hook para consumir el contexto
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth debe usarse dentro de AuthProvider");
+  return ctx;
+};

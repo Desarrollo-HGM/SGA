@@ -43,13 +43,13 @@ type NavItem = {
 const mockdata: NavItem[] = [
   {
     icon: IconClipboardList,
-    title: 'Solicitudes de Sub Almacén',
-    description: 'Visualiza y gestiona las solicitudes',
+    title: 'Solicitudes',
+    description: 'Visualiza y gestiona las solicitudes de las guardas',
     link: '/view_solicitudes_almacen',
   },
   {
     icon: IconBuildingWarehouse,
-    title: 'Nuevo Subalmacen',
+    title: 'Nueva Guarda',
     description: 'Alta y gestión de subalmacenes',
     link: '/Alta_Almacenes',
   },

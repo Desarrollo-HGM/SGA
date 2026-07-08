@@ -1,19 +1,27 @@
 // src/services/auth.ts
 import api from "../config/api";
 
-
-// Login: recibe accessToken y user del backend
+// Login: recibe accessToken, refreshToken y user del backend
 export const login = async (username: string, password: string) => {
   const res = await api.post("/auth/login", { username, password });
-  const { accessToken, user } = res.data;
-  return { token: accessToken, user };
+
+  const { accessToken, refreshToken, user } = res.data;
+
+  localStorage.setItem("accessToken", accessToken);
+  localStorage.setItem("refreshToken", refreshToken);
+
+  return { accessToken, refreshToken, user };
 };
 
 // Refresh: obtiene un nuevo accessToken usando refreshToken
 export const refreshToken = async (refreshToken: string) => {
   const res = await api.post("/auth/refresh", { token: refreshToken });
   const { accessToken, user } = res.data;
-  return { token: accessToken, user };
+
+  // Actualizar el accessToken en localStorage
+  localStorage.setItem("accessToken", accessToken);
+
+  return { accessToken, user };
 };
 
 // Validate: endpoint protegido que confirma si el token es válido
