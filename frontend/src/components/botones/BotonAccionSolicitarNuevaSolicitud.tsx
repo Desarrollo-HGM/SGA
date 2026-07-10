@@ -9,7 +9,7 @@ import {
 
 import type { Insumo, CartItem } from "../../types/global";
 import { useState } from "react";
-
+import { useAuth } from "../../hooks/useAuth";
 interface Props {
   record: Insumo;
   cart: CartItem[];
@@ -17,6 +17,7 @@ interface Props {
   removeFromCart: (id: number) => void;
 
   onSurtir?: (item: Insumo) => void;
+  
 }
 
 export default function BotonAccion({
@@ -26,6 +27,9 @@ export default function BotonAccion({
   removeFromCart,
 
 }: Props) {
+const { user } = useAuth();
+ if (user?.rol === "almacen") return null;
+
   const [hover, setHover] = useState(false);
 
   const isInCart = cart.some(

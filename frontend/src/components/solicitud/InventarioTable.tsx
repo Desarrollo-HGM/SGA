@@ -12,7 +12,7 @@ import {
   Code
 } from "@mantine/core";
 
-import BotonAccion from "../botones/BotonAccionNuevaSolicitud";
+import BotonAccion from "../botones/BotonAccionSolicitarNuevaSolicitud";
 import { IconBuildingHospital } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 

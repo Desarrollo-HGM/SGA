@@ -4,13 +4,13 @@ import DashboardLayout from "../layouts/DashboardLayout";
 
 import DashboardPage from "../pages/Dashboard";
 import Alta_AlmacenesPage from "../pages/Alta_Almacenes";
-import MovimientosPage from "../pages/Movimientos";
+
 import LoginPage from "../pages/Login";
 import ReportesPage from "../pages/Reportes";
 import Lotes_CaducidadesPage from "../pages/Lotes_Caducidades";
-import ReabastecimientoPage from "../pages/Reabastecimiento";
-import InventarioPage from "../pages/Inventario";
-import Stock_AlmacenPage from "../pages/Stock_Almacen";
+
+
+
 
 
 
@@ -18,6 +18,7 @@ import Stock_AlmacenPage from "../pages/Stock_Almacen";
 import { useAuth } from "../hooks/useAuth";
 import type { JSX } from "react";
 import View_Solicitudes_Almacen from "../pages/View_Solicitudes_Almacen";
+import { ProtectedRoute } from "./ProtectedRoute";
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
   const { user } = useAuth();
@@ -32,103 +33,79 @@ export default function AppRouter() {
       <Route
         path="/"
         element={
+
+ <ProtectedRoute allowedRoles={["almacen","admin","solicitante","guarda"]}>
           <PrivateRoute>
             <DashboardLayout>
               <DashboardPage />
             </DashboardLayout>
           </PrivateRoute>
+</ProtectedRoute>
+
         }
       />
 
  <Route
         path="/view_solicitudes_almacen"
         element={
+         <ProtectedRoute allowedRoles={["admin","guarda","solicitante"]}>
           <PrivateRoute>
             <DashboardLayout>
               <View_Solicitudes_Almacen />
             </DashboardLayout>
           </PrivateRoute>
+          </ProtectedRoute>
         }
       />
 
 
- <Route
-        path="/Stock_Almacen"
-        element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <Stock_AlmacenPage />
-            </DashboardLayout>
-          </PrivateRoute>
-        }
-      />
 
 
       <Route
         path="/alta_almacenes"
         element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <Alta_AlmacenesPage />
-            </DashboardLayout>
-          </PrivateRoute>
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <PrivateRoute>
+              <DashboardLayout>
+                <Alta_AlmacenesPage />
+              </DashboardLayout>
+            </PrivateRoute>
+          </ProtectedRoute>
         }
       />
 
 
-      <Route
-        path="/movimientos"
-        element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <MovimientosPage />
-            </DashboardLayout>
-          </PrivateRoute>
-        }
-      />
+  
        <Route
         path="/reportes"
         element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <ReportesPage />
-            </DashboardLayout>
-          </PrivateRoute>
+          <ProtectedRoute allowedRoles={["almacen","admin"]}>
+            <PrivateRoute>
+              <DashboardLayout>
+                <ReportesPage />
+              </DashboardLayout>
+            </PrivateRoute>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/lotes_caducidades"
         element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <Lotes_CaducidadesPage />
-            </DashboardLayout>
-          </PrivateRoute>
+          <ProtectedRoute allowedRoles={["guarda","admin"]}>
+            <PrivateRoute>
+              <DashboardLayout>
+                <Lotes_CaducidadesPage />
+              </DashboardLayout>
+            </PrivateRoute>
+          </ProtectedRoute>
         }
       />
        
-           <Route
-        path="/reabastecimiento"
-        element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <ReabastecimientoPage />
-            </DashboardLayout>
-          </PrivateRoute>
-        }
-      />
-
- <Route
-        path="/inventario"
-        element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <InventarioPage />
-            </DashboardLayout>
-          </PrivateRoute>
-        }
-      />
+         
+      
+       
+         
 
 
       {/* Redirección por defecto */}

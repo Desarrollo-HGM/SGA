@@ -1,11 +1,10 @@
 import {
   IconClipboardList,
   IconBuildingWarehouse,
-  IconArrowsTransferUpDown,
-  IconPackages,
+
   IconCalendarClock,
   IconChartBar,
-  IconCalendarEvent,
+
   IconChevronDown,
   IconLogout,
 } from '@tabler/icons-react';
@@ -32,12 +31,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import classes from '../../styles/HeaderMegaMenu.module.css';
 import '@mantine/core/styles.css';
 import type { TablerIcon } from '@tabler/icons-react';
+import type { User } from '@/types/User';
 
 type NavItem = {
   icon: TablerIcon;
   title: string;
   description: string;
   link: string;
+  rolesPermitidos: User["rol"][];   
 };
 
 const mockdata: NavItem[] = [
@@ -46,43 +47,30 @@ const mockdata: NavItem[] = [
     title: 'Solicitudes',
     description: 'Visualiza y gestiona las solicitudes de las guardas',
     link: '/view_solicitudes_almacen',
+    rolesPermitidos: ["admin", "guarda", "solicitante"],
   },
   {
     icon: IconBuildingWarehouse,
-    title: 'Nueva Guarda',
-    description: 'Alta y gestión de subalmacenes',
+    title: 'Guardas',
+    description: 'Alta y gestión de guardas',
     link: '/Alta_Almacenes',
-  },
-  {
-    icon: IconArrowsTransferUpDown,
-    title: 'Surtir Solicitudes',
-    description: 'Flujo de entradas y salida de insumos',
-    link: '/Movimientos',
-  },
-  {
-    icon: IconPackages,
-    title: 'Stock en tiempo real',
-    description: 'Insumos existentes en el almacén',
-    link: '/Stock_Almacen',
+    rolesPermitidos: ["admin"],
   },
   {
     icon: IconCalendarClock,
     title: 'Lotes y Caducidades',
     description: 'Gestión de lotes y fechas de caducidad',
     link: '/Lotes_Caducidades',
+    rolesPermitidos: ["guarda", "admin"],
   },
   {
     icon: IconChartBar,
     title: 'Reportes y Análisis',
     description: 'Descarga de reportes detallados',
     link: '/Reportes',
+    rolesPermitidos: ["admin", "almacen"],
   },
-  {
-    icon: IconCalendarEvent,
-    title: 'Calendario de Reabastecimiento',
-    description: 'Calendarización de pedidos de insumos',
-    link: '/Reabastecimiento',
-  },
+  
 ];
 
 export function HeaderMegaMenu() {
@@ -97,8 +85,15 @@ export function HeaderMegaMenu() {
     navigate('/login');
   };
 
-  const links = mockdata.map((item) => (
-    <UnstyledButton className={classes.subLink} key={item.title} component={Link} to={item.link}>
+const links = mockdata
+  .filter((item) => user && item.rolesPermitidos.includes(user.rol)) // 👈 filtro por rol
+  .map((item) => (
+    <UnstyledButton
+      className={classes.subLink}
+      key={item.title}
+      component={Link}
+      to={item.link}
+    >
       <Group wrap="nowrap" align="flex-start">
         <ThemeIcon size={34} variant="light" radius="md" color="blue">
           <item.icon size={22} />
@@ -110,6 +105,7 @@ export function HeaderMegaMenu() {
       </Group>
     </UnstyledButton>
   ));
+
 
   return (
     <Box pb={20}>
@@ -128,7 +124,7 @@ export function HeaderMegaMenu() {
           <Group>
             <img src="/src/assets/hgm.png" alt="Logo HGM" style={{ width: '140px', height: '90px' }} />
             <Group gap={20} visibleFrom="sm">
-              <Link to="/Dashboard" className={classes.link}>Dashboard Almacén Central</Link>
+              <Link to="/Dashboard" className={classes.link}>Dashboard</Link>
               <HoverCard width={600} position="bottom" radius="md" shadow="md" withinPortal>
                 <HoverCard.Target>
                   <a href="#" className={classes.link}>
@@ -140,11 +136,12 @@ export function HeaderMegaMenu() {
                   </a>
                 </HoverCard.Target>
                 <HoverCard.Dropdown>
-                  <Text fw={500} mb="sm">Módulos</Text>
+                 
                   <Divider my="sm" />
                   <SimpleGrid cols={2} spacing={0}>{links}</SimpleGrid>
                   <div className={classes.dropdownFooter}>
-                    <h3>Control de Inventarios</h3>
+                   <h3 style={{ color: "gray" }}>Control de Inventarios</h3>
+
                   </div>
                 </HoverCard.Dropdown>
               </HoverCard>

@@ -11,8 +11,10 @@ import {
   PasswordInput,
   Button,
   Alert,
-  Stack,
-  Image
+  Image,
+  Flex,
+  Divider,
+  Text
 } from "@mantine/core";
 
 import {
@@ -23,7 +25,6 @@ import {
 } from "@tabler/icons-react";
 
 export default function Login() {
-
   const { user, token, login } = useAuth();
   const navigate = useNavigate();
 
@@ -32,42 +33,34 @@ export default function Login() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-
     e.preventDefault();
-
     setError("");
     setSuccess("");
 
     if (!username.trim()) {
-      setError("Ingrese su usuario");
+      setError("Ingrese su usuario institucional");
       return;
     }
 
     if (!password.trim()) {
-      setError("Ingrese su contraseña");
+      setError("Ingrese su contraseña institucional");
       return;
     }
 
     try {
-
       setLoading(true);
-
       const { user, token } = await login(username, password);
 
       console.log("✅ Login correcto:", { user, token });
-      
       setSuccess("Acceso correcto, redirigiendo...");
 
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
-
     } catch (err: any) {
-
       console.error("❌ Error en login:", err);
 
       if (err.response) {
@@ -77,54 +70,55 @@ export default function Login() {
       } else {
         setError("Error inesperado en login");
       }
-
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-
     if (user && token) {
       navigate("/dashboard");
     }
-
   }, [user, token, navigate]);
 
   return (
-
     <Container size={420} my={120}>
-
       <Paper shadow="xl" radius="md" p="xl" withBorder>
-
-        <Stack>
-
+        <Flex direction="column" align="center" gap="lg">
           <Image
             src="/src/assets/hgm.png"
-            alt="Logo HGM"
-            height={110}
+            alt="Logo institucional"
+            height={100}
             fit="contain"
           />
 
-         
           {error && (
-            <Alert icon={<IconAlertCircle size={18} />} color="red">
+            <Alert
+              icon={<IconAlertCircle size={28} />}
+              color="red"
+              variant="light"
+              radius="md"
+            >
               {error}
             </Alert>
           )}
 
           {success && (
-            <Alert icon={<IconCheck size={18} />} color="green">
+            <Alert
+              icon={<IconCheck size={18} />}
+              color="green"
+              variant="light"
+              radius="md"
+              title="Acceso concedido"
+            >
               {success}
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit}>
-
-            <Stack>
-
+          <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+            <Flex direction="column" gap="md">
               <TextInput
-                label="Usuario"
+                label="Usuario institucional"
                 placeholder="Ingrese su usuario"
                 leftSection={<IconUser size={16} />}
                 value={username}
@@ -146,20 +140,22 @@ export default function Login() {
                 fullWidth
                 loading={loading}
                 size="md"
+                variant="light"
                 color="blue"
+                radius="md"
               >
                 Ingresar al sistema
               </Button>
-
-            </Stack>
-
+            </Flex>
           </form>
 
-        </Stack>
+          <Divider my="sm" />
 
+          <Text size="sm" c="dimmed" ta="center">
+            Hospital General de México "Dr. Eduardo Liceaga" © 2026
+          </Text>
+        </Flex>
       </Paper>
-
     </Container>
-
   );
 }

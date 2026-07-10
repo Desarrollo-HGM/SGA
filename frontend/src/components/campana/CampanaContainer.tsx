@@ -10,13 +10,14 @@ import {
 } from "@mantine/core";
 
 import { IconBell, IconPackages, IconX } from "@tabler/icons-react";
-
-import CampanaSolicitudes from "./CampanaSolicitudes";
 import { getSolicitudes } from "../../services/solicitudes";
+import CampanaSolicitudes from "./CampanaSolicitudes";
 import type { Solicitud } from "../../services/solicitudes";
+import { useAuth } from "../../hooks/useAuth";
+
 
 export default function CampanaContainer() {
-
+  const { user } = useAuth();
   const [opened, setOpened] = useState(false);
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const prevCountRef = useRef(0);
@@ -51,6 +52,8 @@ export default function CampanaContainer() {
   return (
     <>
       {/* 🔔 ICONO */}
+
+      {(user?.rol === "guarda" || user?.rol === "admin") && (
       <Indicator
         inline
         label={solicitudes.length || undefined}
@@ -63,8 +66,10 @@ export default function CampanaContainer() {
           onClick={() => setOpened(true)}
         />
       </Indicator>
-
+)}
       {/* 🔔 DRAWER */}
+
+      {(user?.rol === "guarda" || user?.rol === "admin") && (
       <Drawer
         opened={opened}
         onClose={() => setOpened(false)}
@@ -104,6 +109,8 @@ export default function CampanaContainer() {
           <CampanaSolicitudes data={solicitudes} />
         )}
       </Drawer>
+      )}
     </>
   );
+  
 }

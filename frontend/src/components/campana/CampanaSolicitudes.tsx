@@ -14,6 +14,7 @@ import { useState } from "react";
 import ModalDetalleSolicitud from "./ModalDetalleSolicitud";
 // Importamos la interfaz Solicitud directamente para garantizar compatibilidad de tipos
 import type { Solicitud } from "../../services/solicitudes"; 
+import BotonDetalleSolicitud from "../botones/BotonDetalleSolicitud";
 
 /* ================= TIPOS ================= */
 
@@ -118,16 +119,7 @@ export default function CampanaSolicitudes({ data }: Props) {
 
                   <td style={{ textAlign: "center" }}>
                     <Group justify="center">
-                      <Button
-                        size="xs"
-                        radius="xl"
-                        variant="light"
-                        color="blue"
-                        leftSection={<IconEye size={14} />}
-                        onClick={() => openDetalle(sol.id_solicitudes)}
-                      >
-                        Detalle
-                      </Button>
+                       <BotonDetalleSolicitud onClick={() => openDetalle(sol.id_solicitudes)} />
                     </Group>
                   </td>
                 </tr>
