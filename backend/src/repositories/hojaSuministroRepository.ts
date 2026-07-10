@@ -2,14 +2,23 @@
 import { db } from '../config/db.js';
 import type { EstadoHojaDetalle, EstadoReserva, EstadoDetalle, EstadoSolicitud } from '../models/solicitud.js';
 
-export async function insertHojaSuministro(id_solicitudes: number, observaciones?: string) {
+export async function insertHojaSuministro(
+  id_solicitudes: number,
+  observaciones?: string
+      ): Promise<number> {
   const [id] = await db('hoja_suministro').insert({
     id_solicitudes,
     fecha: new Date(),
     observaciones: observaciones || null
   });
+
+  if (!id) {
+    throw new Error("No se pudo insertar la hoja de suministro");
+  }
+
   return id;
 }
+
 
 export async function insertHojaDetalle(
   id_hoja: number,
@@ -60,4 +69,26 @@ export async function updateSolicitudEstado(id_solicitudes: number, estado: Esta
   await db('solicitudes')
     .where({ id_solicitudes })
     .update({ estado });
+}
+
+export async function getHojaById(id_hoja: number) {
+  const hoja = await db('hoja_suministro')
+    .where({ id_hoja })
+    .first();
+
+  if (!hoja) return null;
+
+  const detalles = await db('hoja_suministro_detalle as hd')
+    .join('cat_insumos as i', 'hd.id_insumos', 'i.id_insumos')
+    .select(
+      'hd.id_detalle',
+      'hd.id_insumos',
+      'i.descripcion_corta as descripcion',
+      'hd.cantidad_solicitada',
+      'hd.cantidad_suministrada',
+      'hd.estado'
+    )
+    .where('hd.id_hoja', id_hoja);
+
+  return { ...hoja, detalles };
 }

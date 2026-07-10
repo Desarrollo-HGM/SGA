@@ -5,18 +5,17 @@ import {
   updateLoteCantidad,
   updateReservaEstado,
   updateDetalleEstado,
-  updateSolicitudEstado
+  updateSolicitudEstado,
+  getHojaById
 } from '../repositories/hojaSuministroRepository.js';
 
 import type { SurtidoPayload, EstadoSolicitud, EstadoDetalle } from '../models/solicitud.js';
 
 export async function surtirSolicitud(payload: SurtidoPayload) {
-  // 1. Crear hoja de suministro (ahora siempre devuelve number)
   const idHoja: number = await insertHojaSuministro(payload.id_solicitudes, payload.observaciones);
 
   let estadoGlobal: EstadoSolicitud = 'Completada';
 
-  // 2. Procesar insumos
   for (const insumo of payload.insumos) {
     await insertHojaDetalle(
       idHoja,
@@ -25,7 +24,6 @@ export async function surtirSolicitud(payload: SurtidoPayload) {
       insumo.cantidad_suministrada
     );
 
-    // 3. Actualizar lote y reserva
     if (insumo.cantidad_suministrada > 0) {
       await updateLoteCantidad(insumo.id_lote, insumo.cantidad_suministrada);
       await updateReservaEstado(payload.id_solicitudes, insumo.id_lote, 'Consumida');
@@ -33,7 +31,6 @@ export async function surtirSolicitud(payload: SurtidoPayload) {
       await updateReservaEstado(payload.id_solicitudes, insumo.id_lote, 'Liberada');
     }
 
-    // 4. Actualizar detalle de solicitud
     const estadoDetalle: EstadoDetalle =
       insumo.cantidad_suministrada === insumo.cantidad_solicitada
         ? 'Completada'
@@ -48,8 +45,20 @@ export async function surtirSolicitud(payload: SurtidoPayload) {
     }
   }
 
-  // 5. Actualizar estado global de solicitud
   await updateSolicitudEstado(payload.id_solicitudes, estadoGlobal);
 
-  return { success: true, id_hoja: idHoja, estado: estadoGlobal };
+  // 🔎 Nuevo: obtener hoja completa
+  const hoja = await getHojaById(idHoja);
+
+  return {
+    success: true,
+    estado: estadoGlobal,
+    cabecera: {
+      id_hoja: hoja?.id_hoja,
+      id_solicitudes: hoja?.id_solicitudes,
+      fecha: hoja?.fecha,
+      observaciones: hoja?.observaciones
+    },
+    detalles: hoja?.detalles || []
+  };
 }
