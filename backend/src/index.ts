@@ -52,8 +52,8 @@ app.get('/', async (_req, res) => {
 }); 
 
 // ✅ Protegemos las rutas de API con authMiddleware
-app.use("/api/insumos", authMiddleware, requireRole(["admin", "guarda", "almacen", "solicitante"]), insumosRoutes);
-app.use("/api/lotes", authMiddleware, requireRole(["admin", "guarda", "almacen", "solicitante"]), lotesRoutes);
+app.use("/api/insumos", authMiddleware, requireRole(["admin", "guarda", "almacen"]), insumosRoutes);
+app.use("/api/lotes", authMiddleware, requireRole(["admin", "guarda", "almacen"]), lotesRoutes);
 app.use("/api/movimientos", authMiddleware, requireRole(["admin", "guarda", "almacen", "solicitante"]), movimientosRoutes);
 app.use("/api/solicitudes", authMiddleware, requireRole(["admin", "guarda", "almacen", "solicitante"]), solicitudesRoutes);
 app.use(  "/api/stock",  authMiddleware,  requireRole(["admin", "guarda", "almacen", "solicitante"]),  stockRoutes);

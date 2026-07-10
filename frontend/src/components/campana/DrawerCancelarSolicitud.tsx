@@ -3,15 +3,14 @@ import {
   Group,
   Text,
   ActionIcon,
-  Textarea,
-  Button
+  Textarea
 } from "@mantine/core";
 
 import {
   IconAlertTriangle,
   IconX
 } from "@tabler/icons-react";
-
+import BotonConfirmarCancelacion from "../botones/BotonConfirmarCancelacion";
 interface Props {
   opened: boolean;
   onClose: () => void;
@@ -68,16 +67,8 @@ export default function DrawerCancelarSolicitud({
         minRows={3}
       />
 
-      <Button
-        fullWidth
-        mt="md"
-        color="red"
-        radius="xl"
-        variant="light"
-        onClick={onConfirm}
-      >
-        Confirmar cancelación
-      </Button>
+<BotonConfirmarCancelacion onConfirm={onConfirm} />
+  
     </Drawer>
   );
 }
