@@ -6,5 +6,6 @@ const router = Router();
 
 // Ruta para surtir una solicitud
 router.post('/solicitudes/:id/surtir', surtirController.surtir);
+//router.post('/solicitudes/:id/cancelar', cancelarController.cancelar);
 
 export default router;

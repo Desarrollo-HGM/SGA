@@ -23,3 +23,15 @@ export const surtirController = {
     }
   }
 };
+
+//export const cancelarController = {
+//  async cancelar(req: Request, res: Response) {
+//    try {
+//      const id_solicitudes = Number(req.params.id);
+//      const result = await cancelarSolicitud(id_solicitudes);
+//      res.status(200).json(result);
+//    } catch (error: any) {
+//      res.status(500).json({ success: false, message: error.message });
+//    }
+//  }
+//};

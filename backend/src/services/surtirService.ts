@@ -62,3 +62,12 @@ export async function surtirSolicitud(payload: SurtidoPayload) {
     detalles: hoja?.detalles || []
   };
 }
+
+
+//export async function cancelarSolicitud(id_solicitudes: number) {
+//  await updateSolicitudEstado(id_solicitudes, 'Rechazada');
+//  await updateDetalleEstado(id_solicitudes, 'Rechazada');
+//  await liberarReservas(id_solicitudes);
+//
+//  return { success: true, id_solicitudes, estado: 'Rechazada' };
+//}
