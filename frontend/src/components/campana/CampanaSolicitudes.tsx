@@ -1,6 +1,5 @@
 import {
   Table,
-  Button,
   Card,
   Text,
   Badge,
@@ -8,7 +7,6 @@ import {
   ScrollArea
 } from "@mantine/core";
 
-import { IconEye } from "@tabler/icons-react";
 import { useState } from "react";
 
 import ModalDetalleSolicitud from "./ModalDetalleSolicitud";

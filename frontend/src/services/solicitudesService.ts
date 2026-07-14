@@ -22,7 +22,7 @@ export const enviarSolicitudFinal = async (
     // Usa la justificación general del componente, o el respaldo del primer ítem
     justificacion: justificacion || cart[0].justificacion || "", 
     insumos: cart.map((item) => ({
-      id_insumos: item.id,
+    id_insumos: item.id,
       cantidad: item.cantidad,
     })),
   };
