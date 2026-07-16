@@ -1,5 +1,6 @@
 import {
   Table,
+  Button,
   Card,
   Text,
   Badge,
@@ -7,12 +8,12 @@ import {
   ScrollArea
 } from "@mantine/core";
 
+import { IconEye } from "@tabler/icons-react";
 import { useState } from "react";
 
 import ModalDetalleSolicitud from "./ModalDetalleSolicitud";
 // Importamos la interfaz Solicitud directamente para garantizar compatibilidad de tipos
 import type { Solicitud } from "../../services/solicitudes"; 
-import BotonDetalleSolicitud from "../botones/BotonDetalleSolicitud";
 
 /* ================= TIPOS ================= */
 
@@ -117,7 +118,16 @@ export default function CampanaSolicitudes({ data }: Props) {
 
                   <td style={{ textAlign: "center" }}>
                     <Group justify="center">
-                       <BotonDetalleSolicitud onClick={() => openDetalle(sol.id_solicitudes)} />
+                      <Button
+                        size="xs"
+                        radius="xl"
+                        variant="light"
+                        color="blue"
+                        leftSection={<IconEye size={14} />}
+                        onClick={() => openDetalle(sol.id_solicitudes)}
+                      >
+                        Detalle
+                      </Button>
                     </Group>
                   </td>
                 </tr>
@@ -138,4 +148,3 @@ export default function CampanaSolicitudes({ data }: Props) {
     </Card>
   );
 }
- 

@@ -26,6 +26,9 @@ export interface InsumoSolicitado {
   unidad_distribucion: string;
   stock: number;
   cantidad: number; // Cantidad solicitada originalmente por el médico
+  id_lote: number;
+  estado: "Pendiente" | "Surtida" | "Cancelada" | string;
+  descripcion: string; // Descripción del insumo
 }
 
 // 3. Interfaz extendida para la respuesta del detalle completo

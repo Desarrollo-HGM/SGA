@@ -141,7 +141,7 @@ export const solicitudesRepository = {
           'sd.cantidad',
           'sd.id_lote',
           'sd.estado',
-           'al.nombre_almacen as nombre_almacen' 
+          'al.nombre_almacen as nombre_almacen' 
         )
         .where('sd.id_solicitudes', id_solicitudes);
 
