@@ -8,4 +8,10 @@ router.post('/final', solicitudesController.create);
 router.get('/', solicitudesController.getAll);
 router.get('/:id', solicitudesController.getById);
 
+
+//  POST /api/solicitudes/:id
+
+router.post('/:id', solicitudesController.surtirSolicitud);
+
+
 export default router;

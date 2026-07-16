@@ -54,3 +54,24 @@ export const getDetalleSolicitud = async (id: number): Promise<DetalleSolicitudR
   const response = await api.get(`/api/solicitudes/${id}`);
   return response.data;
 };
+
+/**
+ * Registra el surtido de una solicitud en el backend
+ * Endpoint: POST /api/solicitudes/:id
+ */
+export const surtirSolicitud = async (
+  id: number,
+  payload: {
+    observaciones?: string | null;
+    insumos: {
+      id_detalle: number;
+      id_insumos: number;
+      id_lote: number;
+      cantidad_solicitada: number;
+      cantidad_suministrada: number;
+    }[];
+  }
+): Promise<void> => {
+  await api.post(`/api/solicitudes/${id}`, payload);
+};
+

@@ -1,16 +1,6 @@
-import {
-  Drawer,
-  Group,
-  Text,
-  ActionIcon,
-  Textarea,
-  Button
-} from "@mantine/core";
-
-import {
-  IconAlertTriangle,
-  IconX
-} from "@tabler/icons-react";
+import { Drawer, Group, Text, ActionIcon, Textarea } from "@mantine/core";
+import { IconAlertTriangle, IconX } from "@tabler/icons-react";
+import BotonConfirmarCancelacion from "../botones/BotonConfirmarCancelacion";
 
 interface Props {
   opened: boolean;
@@ -41,11 +31,8 @@ export default function DrawerCancelarSolicitud({
       <Group justify="space-between" mb="md">
         <Group>
           <IconAlertTriangle color="red" />
-          <Text fw={700}>
-            Cancelar solicitud #{idSolicitud}
-          </Text>
+          <Text fw={700}>Cancelar solicitud #{idSolicitud}</Text>
         </Group>
-
         <ActionIcon
           variant="light"
           color="red"
@@ -60,7 +47,6 @@ export default function DrawerCancelarSolicitud({
       <Text fw={600} mb="xs">
         Motivo de cancelación
       </Text>
-
       <Textarea
         placeholder="Escribe el motivo..."
         value={motivo}
@@ -68,16 +54,8 @@ export default function DrawerCancelarSolicitud({
         minRows={3}
       />
 
-      <Button
-        fullWidth
-        mt="md"
-        color="red"
-        radius="xl"
-        variant="light"
-        onClick={onConfirm}
-      >
-        Confirmar cancelación
-      </Button>
+      {/* Botón modular importado */}
+      <BotonConfirmarCancelacion onConfirm={onConfirm} />
     </Drawer>
   );
 }
