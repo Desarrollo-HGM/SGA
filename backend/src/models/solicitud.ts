@@ -1,10 +1,10 @@
 // src/models/solicitud.ts
 
 // Estados posibles de la solicitud
-export type EstadoSolicitud = "Pendiente" | "Completada" | "Parcial" | "Cancelada";
+export type EstadoSolicitud = "Pendiente" | "Completo" | "Parcial" | "Cancelada";
 
 // Estados posibles de cada detalle de insumo
-export type EstadoDetalle = "Pendiente" | "Completada" | "Parcial" | "Rechazada";
+export type EstadoDetalle = "Pendiente" | "Completo" | "Parcial" | "Rechazada";
 
 // Estados posibles en reservas
 export type EstadoReserva = "Pendiente" | "Consumida" | "Liberada";
@@ -19,7 +19,7 @@ export interface Solicitud {
   id_servicio: number;
   id_subalmacen?: number;
   justificacion?: string | null;
-  estado?: "Pendiente" | "Aprobada" | "Rechazada" | "Completada";
+  estado?: "Pendiente" | "Aprobada" | "Rechazada" | "Completo";
 }
 
 // Detalle de insumos dentro de la solicitud
@@ -29,7 +29,7 @@ export interface SolicitudDetalle {
   id_insumos: number;
   cantidad: number;
   id_lote?: number;
-  estado?: "Pendiente" | "Aprobada" | "Rechazada" | "Completada";
+  estado?: "Pendiente" | "Aprobada" | "Rechazada" | "Completo";
 }
 
 // Payload que recibe el servicio al crear una solicitud
