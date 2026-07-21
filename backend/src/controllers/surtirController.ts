@@ -21,8 +21,8 @@ export const surtirController = {
       logger.error("[SurtirController] Error en surtir", { error: error.message });
       res.status(500).json({ success: false, message: error.message || 'Error al surtir solicitud' });
     }
-  }
-};
+  },
+
 
   async getHoja(req: Request, res: Response) {
     try {
