@@ -24,7 +24,7 @@ export const surtirController = {
   }
 };
 
-//export const cancelarController = {
+// export const cancelarController = {
 //  async cancelar(req: Request, res: Response) {
 //    try {
 //      const id_solicitudes = Number(req.params.id);

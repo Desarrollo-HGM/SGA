@@ -5,5 +5,8 @@ export interface User {
   rol: string;            // roles.rol
   acceso: "Alto" | "Medio" | "Bajo"; // roles.acceso
   nombreCompleto: string;  // cat_medicos.nombre + apaterno + amaterno
-  rfc: string;             // cat_medicos.rfc
+  rfc: string;    
+  servicio?: string;   
+  subalmacen?: string;       // 👈 agregado
+  id_subalmacen?: number;     // cat_servicios.servicio
 }

@@ -35,7 +35,8 @@ export default function TablaCarrito({
         >
           <tr>
             <th style={{ textAlign: "center" }}>Insumo</th>
-            <th style={{ textAlign: "center", width: 110 }}>Cantidad</th>
+            <th style={{ textAlign: "center" }}>Stock</th>
+            <th style={{ textAlign: "center", width: 310 }}>Cantidad</th>
             <th style={{ textAlign: "center" }}>Estado</th>
             <th style={{ textAlign: "center", width: 120 }}>Acción</th>
           </tr>
@@ -53,23 +54,76 @@ export default function TablaCarrito({
                   <Text fw={500}>{item.insumo}</Text>
                 </td>
                 <td>
-                  <TextInput
-                    type="number"
-                    value={item.cantidad === 0 ? "" : item.cantidad}
-                    size="xs"
-                    style={{ width: 80, margin: "auto" }}
-                    min={0}
-                    required
-                    onChange={(e) =>
-                      updateCantidad(
-                        item.id,
-                        e.currentTarget.value === ""
-                          ? 0
-                          : Number(e.currentTarget.value)
-                      )
-                    }
-                  />
+                  <Text fw={500}>{item.stock}</Text>
+                 
+
                 </td>
+          <td>
+  <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+   
+  <TextInput
+  type="text"
+  placeholder="Ingrese cantidad"
+  value={item.cantidad === 0 ? "" : String(item.cantidad)}
+  size="xs"
+  style={{ width: 80 }}
+  required
+  onChange={(e) => {
+    const val = e.currentTarget.value;
+
+    // Solo permitir números o vacío
+    if (/^\d*$/.test(val)) {
+      // Si está vacío, lo tratamos como 0 pero el campo se queda vacío
+      const num = val === "" ? 0 : Number(val);
+
+      if (destino === "guarda") {
+        // En guarda no permitir exceder stock
+        if (num <= item.stock) {
+          updateCantidad(item.id, num);
+        }
+      } else {
+        // En central sí permitir exceder stock
+        updateCantidad(item.id, num);
+      }
+    }
+  }}
+/>
+
+
+
+
+
+
+    {item.cantidad === 0 ? (
+      <Badge color="gray" variant="light" mt={4}>
+        Pendiente
+      </Badge>
+    ) : destino === "guarda" ? (
+      item.cantidad > item.stock ? (
+        <Badge color="red" variant="light" mt={4}>
+          ¡Excede stock disponible!
+        </Badge>
+      ) : (
+        <Badge color="green" variant="light" mt={4}>
+          ¡Permitido!
+        </Badge>
+      )
+    ) : (
+      item.cantidad > item.stock ? (
+        <Badge color="orange" variant="light" mt={4}>
+          Requiere justificación
+        </Badge>
+      ) : (
+        <Badge color="green" variant="light" mt={4}>
+          OK
+        </Badge>
+      )
+    )}
+  </div>
+</td>
+
+
+
                 <td>
                   {requiere ? (
                     <Badge color="orange" variant="light">

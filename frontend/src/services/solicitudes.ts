@@ -67,6 +67,7 @@ export const surtirSolicitud = async (
       id_detalle: number;
       id_insumos: number;
       id_lote: number;
+      stock: number;
       cantidad_solicitada: number;
       cantidad_suministrada: number;
     }[];

@@ -110,6 +110,7 @@ const handleSurtir = async () => {
         id_detalle: i.id_detalle,
         id_insumos: i.id_insumos,
         id_lote: i.id_lote,
+        stock: i.stock,
         cantidad_solicitada: i.cantidad,
         cantidad_suministrada: i.solicitado
       }))
@@ -296,6 +297,12 @@ const handleSurtir = async () => {
                   { accessor: "id_detalle", title: "#", textAlign: "center", width: 100 },
                  { accessor: "nombre_almacen", title: "Almacen", textAlign: "center", width: 100 },
                   { accessor: "descripcion", title: "Descripción del Insumo" },
+                   { 
+                    accessor: "stock", 
+                    title: "stock", 
+                    textAlign: "center",
+                    render: (r) => <Text fw={700}>{r.stock}</Text>
+                  },
                   { 
                     accessor: "cantidad", 
                     title: "Cant. Pedida", 

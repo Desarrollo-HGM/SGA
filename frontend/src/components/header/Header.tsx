@@ -139,39 +139,48 @@ const links = mockdata
                  
                   <Divider my="sm" />
                   <SimpleGrid cols={2} spacing={0}>{links}</SimpleGrid>
+                {user && (
                   <div className={classes.dropdownFooter}>
-                   <h3 style={{ color: "gray" }}>Control de Inventarios</h3>
 
-                  </div>
+  <h3 style={{ color: "gray" }}>Guarda de <span style={{ color: "gray", fontWeight: 600 }}>{user.subalmacen}</span></h3>
+
+    <Text size="sm" fw={500} c="dimmed" mt="xs">
+      Rol: <span style={{ color: "#1c7ed6", fontWeight: 600 }}>{user.rol}</span>
+      
+    </Text>
+ 
+</div>
+ )}
                 </HoverCard.Dropdown>
               </HoverCard>
             </Group>
           </Group>
 
           {/* Usuario + botón */}
-          <Group visibleFrom="sm">
-            {user ? (
-              <>
-              
-                <Text size="sm" fw={500} c="dimmed">
-                  {user.nombreCompleto} ({user.rol})
-                </Text>
-                <Button
-                  variant="filled"
-                  color="red"
-                  onClick={handleLogout}
-                  leftSection={<IconLogout size={16} />}
-                >
-                  Salir
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="default">Log in</Button>
-                <Button variant="filled" color="red">Sign up</Button>
-              </>
-            )}
-          </Group>
+<Group visibleFrom="sm">
+  {user ? (
+    <>
+      <Text size="sm" fw={500} c="dimmed">
+        Usuario: <span style={{ color: "#1c7ed6", fontWeight: 600 }}>{user.nombreCompleto}</span>
+      </Text>
+      <Button
+        variant="filled"
+        color="red"
+        onClick={handleLogout}
+        leftSection={<IconLogout size={16} />}
+      >
+        Salir
+      </Button>
+    </>
+  ) : (
+    <>
+      <Button variant="default">Log in</Button>
+      <Button variant="filled" color="red">Sign up</Button>
+    </>
+  )}
+</Group>
+
+
 
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
         </Group>
