@@ -15,7 +15,7 @@ export const insumosService = {
     return insumo;
   },
 
-  async list(filter?: { q?: string; clave?: string }) {
+  async list(filter?: { q?: string; clave?: string; servicio?: string; id_subalmacen?: number; rol?: string }) {
     logger.debug("[InsumosService] Listando insumos", { filter });
     return insumosRepository.findAll(filter);
   },

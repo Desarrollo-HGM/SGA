@@ -45,5 +45,6 @@
     "skipLibCheck": true,
     "lib": ["ESNext"],
 
-  }
+  },
+  "include": ["src/**/*.ts", "src/types/express.d.ts"]
 }

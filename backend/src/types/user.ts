@@ -1,4 +1,3 @@
-// src/types/User.ts
 export type Rol = "solicitante" | "guarda" | "almacen" | "admin";
 
 export interface User {
@@ -6,9 +5,9 @@ export interface User {
   username: string;
   rol: Rol;
   acceso: string;            // si tu backend lo devuelve
-  nombreCompleto: string;    // este es el que falta
+  nombreCompleto: string;    // nombre completo del usuario
   rfc: string;    
-  servicio?: string;
+  servicio?: string; 
   subalmacen?: string;   // 
-  id_subalmacen?: number; //          // también lo devuelve tu AuthService
+  id_subalmacen?: number; //         // servicio/subalmacén al que pertenece
 }

@@ -93,7 +93,7 @@ export function TokenAlert({ accessToken, refreshToken }: TokenAlertProps) {
       centered
       overlayProps={{ opacity: 0.4, blur: 2 }}
       title={
-        <Text fw={700} size="lg" c="#0D47A1">
+        <Text fw={700} size="lg" c="#0D47A1" variant="light" >
           Tu sesión está por expirar
         </Text>
       }
@@ -104,14 +104,14 @@ export function TokenAlert({ accessToken, refreshToken }: TokenAlertProps) {
 
       <Group justify="space-between" mb="xs">
         <Text fw={600}>Tiempo restante:</Text>
-        <Text fw={700} c="red">
+        <Text fw={700} c="red" variant="light" >
           {timeLeft} segundos
         </Text>
       </Group>
 
       <Progress value={(timeLeft / totalTime) * 100} color="blue" size="lg" mb="lg" />
 
-      <Button fullWidth color="blue" onClick={continuarSesion}>
+      <Button fullWidth color="blue" variant="light" onClick={continuarSesion}>
         Continuar sesión
       </Button>
     </Modal>

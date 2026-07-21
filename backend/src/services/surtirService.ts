@@ -22,7 +22,7 @@ import type { SurtidoPayload, EstadoSolicitud, EstadoDetalle } from '../models/s
 export async function surtirSolicitud(payload: SurtidoPayload) {
   const idHoja: number = await insertHojaSuministro(payload.id_solicitudes, payload.observaciones);
 
-  let estadoGlobal: EstadoSolicitud = 'Completada';
+  let estadoGlobal: EstadoSolicitud = 'Completo';
 
   for (const insumo of payload.insumos) {
     await insertHojaDetalle(
@@ -41,14 +41,14 @@ export async function surtirSolicitud(payload: SurtidoPayload) {
 
     const estadoDetalle: EstadoDetalle =
       insumo.cantidad_suministrada === insumo.cantidad_solicitada
-        ? 'Completada'
+        ? 'Completo'
         : insumo.cantidad_suministrada > 0
         ? 'Parcial'
         : 'Rechazada';
 
     await updateDetalleEstado(insumo.id_detalle, estadoDetalle);
 
-    if (estadoDetalle !== 'Completada') {
+    if (estadoDetalle !== 'Completo') {
       estadoGlobal = 'Parcial';
     }
   }

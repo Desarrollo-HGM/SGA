@@ -15,6 +15,9 @@ const generateAccessToken = (user: any) => {
       acceso: user.acceso,
       nombreCompleto: user.nombreCompleto,
       rfc: user.rfc,
+      servicio: user.servicio,
+      subalmacen: user.subalmacen,
+      id_subalmacen: user.id_subalmacen
     },
     process.env.JWT_SECRET as string,
     { expiresIn: ACCESS_EXPIRATION }

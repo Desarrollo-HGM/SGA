@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import { solicitudesService } from '../services/solicitudesService.js';
 import { logger } from '../config/logger.js';
 
+
 export const solicitudesController = {
   // POST /api/solicitudes/final
   async create(req: Request, res: Response) {
@@ -51,5 +52,10 @@ async getAll(req: Request, res: Response) {
       logger.error("[SolicitudesController] Error en getById", { error: error.message });
       res.status(500).json({ success: false, message: 'Error al obtener detalle' });
     }
-  }
+  },
+
+
+
+
 };
+

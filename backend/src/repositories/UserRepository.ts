@@ -9,6 +9,7 @@ export const UserRepository = {
       .join("cat_medicos", "usuarios.id_medico", "cat_medicos.id_medico")
       .join("roles", "usuarios.id_roles", "roles.id_roles")
       .join("cat_servicios", "usuarios.id_servicio", "cat_servicios.id_servicios")
+      .join("subalmacenes", "usuarios.id_subalmacen", "subalmacenes.id_subalmacen")
       .select(
   "usuarios.id_usuarios as id",
   "valores.usuario as username",
@@ -19,7 +20,10 @@ export const UserRepository = {
   "cat_medicos.apaterno",
   "cat_medicos.amaterno",
   "cat_medicos.rfc",
-  "cat_servicios.servicio as servicio"
+  "cat_servicios.servicio as servicio",
+   "subalmacenes.nombre as subalmacen",      
+      "subalmacenes.id_subalmacen as id_subalmacen"
+
 )
       .where("valores.usuario", username)
       .first();
@@ -34,6 +38,9 @@ export const UserRepository = {
       acceso: result.acceso,
       nombreCompleto: `${result.nombre} ${result.apaterno} ${result.amaterno}`,
       rfc: result.rfc,
+      servicio: result.servicio,
+      subalmacen: result.subalmacen,       
+    id_subalmacen: result.id_subalmacen,
     };
   },
 
@@ -42,6 +49,8 @@ export const UserRepository = {
       .join("usuarios", "valores.id_usuarios", "usuarios.id_usuarios")
       .join("cat_medicos", "usuarios.id_medico", "cat_medicos.id_medico")
       .join("roles", "usuarios.id_roles", "roles.id_roles")
+      .join("cat_servicios", "usuarios.id_servicio", "cat_servicios.id_servicios")
+      .join("subalmacenes", "usuarios.id_subalmacen", "subalmacenes.id_subalmacen")
       .select(
         "usuarios.id_usuarios as id",
         "valores.usuario as username",
@@ -51,7 +60,10 @@ export const UserRepository = {
         "cat_medicos.nombre",
         "cat_medicos.apaterno",
         "cat_medicos.amaterno",
-        "cat_medicos.rfc"
+        "cat_medicos.rfc",
+        "cat_servicios.servicio as servicio",
+        "subalmacenes.nombre as subalmacen",
+        "subalmacenes.id_subalmacen as id_subalmacen"
       )
       .where("usuarios.id_usuarios", id)
       .first();
@@ -66,6 +78,9 @@ export const UserRepository = {
       acceso: result.acceso,
       nombreCompleto: `${result.nombre} ${result.apaterno} ${result.amaterno}`,
       rfc: result.rfc,
+      servicio: result.servicio,
+      subalmacen: result.subalmacen,
+      id_subalmacen: result.id_subalmacen,
     };
   },
 

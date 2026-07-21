@@ -4,6 +4,9 @@ import type { Insumo } from "../models/insumo.js";
 import { logger } from "../config/logger.js";
 
 export const insumosRepository = {
+
+
+
   async create(insumo: Insumo) {
     logger.debug("[InsumosRepository] Insertando insumo en DB", { insumo });
     try {
@@ -16,25 +19,39 @@ export const insumosRepository = {
     }
   },
 
-  async findAll(filter?: { q?: string; clave?: string }) {
-    logger.debug("[InsumosRepository] Buscando insumos con filtro", { filter });
-    try {
-      let query = db<Insumo>("cat_insumos").select("*");
-      if (filter?.q) {
-        query = query.whereILike("descripcion_corta", `%${filter.q}%`)
-                     .orWhereILike("descripcion_larga", `%${filter.q}%`);
-      }
-      if (filter?.clave) {
-        query = query.where("clave", filter.clave);
-      }
-      const result = await query.orderBy("id_insumos", "desc");
-      logger.info("[InsumosRepository] Insumos encontrados", { count: result.length });
-      return result;
-    } catch (err: any) {
-      logger.error("[InsumosRepository] Error al buscar insumos", { error: err.message, filter });
-      throw err;
+async findAll(filter?: { q?: string; clave?: string; servicio?: string; id_subalmacen?: number; rol?: string }) {
+  logger.debug("[InsumosRepository] Buscando insumos con filtro", { filter });
+  try {
+    let query = db<Insumo>("cat_insumos").select("*");
+
+    if (filter?.q) {
+      query = query
+        .whereILike("descripcion_corta", `%${filter.q}%`)
+        .orWhereILike("descripcion_larga", `%${filter.q}%`);
     }
-  },
+
+    if (filter?.clave) query = query.where("clave", filter.clave);
+    if (filter?.servicio) query = query.where("servicio", filter.servicio);
+
+    
+
+if (filter?.id_subalmacen && filter?.rol?.toLowerCase() !== "admin") {
+  query = query.where("id_subalmacen", filter.id_subalmacen);
+}
+
+
+
+    const result = await query.orderBy("id_insumos", "desc");
+    logger.info("[InsumosRepository] Insumos encontrados", { count: result.length });
+    return result;
+  } catch (err: any) {
+    logger.error("[InsumosRepository] Error al buscar insumos", { error: err.message, filter });
+    throw err;
+  }
+}
+,
+
+
 
   async findById(id: number) {
     logger.debug("[InsumosRepository] Buscando insumo por ID", { id });

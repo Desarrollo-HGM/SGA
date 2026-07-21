@@ -57,6 +57,7 @@ app.use("/api/lotes", authMiddleware, requireRole(["admin", "guarda", "almacen"]
 app.use("/api/movimientos", authMiddleware, requireRole(["admin", "guarda", "almacen", "solicitante"]), movimientosRoutes);
 app.use("/api/solicitudes", authMiddleware, requireRole(["admin", "guarda", "almacen", "solicitante"]), solicitudesRoutes);
 app.use(  "/api/stock",  authMiddleware,  requireRole(["admin", "guarda", "almacen", "solicitante"]),  stockRoutes);
+
 app.use('/api', surtirRoutes);
 app.listen(PORT, '0.0.0.0', () => {
  logger.info(`[Server] Servidor backend escuchando en red en puerto ${PORT}`);

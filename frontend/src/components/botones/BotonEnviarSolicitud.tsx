@@ -20,21 +20,26 @@ export default function BotonEnviarSolicitud({
   onEnviarSolicitud,
 }: Props) {
   return (
-    <div style={{ position: "fixed", bottom: 20, right: 20 }}>
-      <Button
-        radius="xl"
-        size="md"
-        loading={isSubmitting}
-        disabled={isSubmitting || isSubmitted || cart.length === 0}
-        color={isSubmitted ? "teal" : "green"}
-        variant={isSubmitted ? "filled" : "light"}
-        leftSection={
-          isSubmitted ? <IconCheck size={18} /> : <IconFileInvoice size={18} />
-        }
-        onClick={() => onEnviarSolicitud(tipoSolicitud, justificacionGeneral)}
-      >
-        {isSubmitted ? "Solicitud enviada" : "Generar solicitud"}
-      </Button>
-    </div>
+ 
+     <div style={{ marginTop: 16, marginBottom: 16 }}>
+  <Button
+    radius="xl"
+    size="md"
+    loading={isSubmitting}
+    disabled={isSubmitting || isSubmitted || cart.length === 0}
+    color={isSubmitted ? "teal" : "green"}
+    variant={isSubmitted ? "filled" : "light"}
+    leftSection={
+      isSubmitted ? <IconCheck size={18} /> : <IconFileInvoice size={18} />
+    }
+    onClick={() => onEnviarSolicitud(tipoSolicitud, justificacionGeneral)}
+    style={{ width: "100%" }} // 👈 ocupa todo el ancho disponible
+  >
+    {isSubmitted ? "Solicitud enviada" : "Generar solicitud"}
+  </Button>
+</div>
+
+
+    
   );
 }

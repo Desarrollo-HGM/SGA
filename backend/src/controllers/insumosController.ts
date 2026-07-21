@@ -4,6 +4,8 @@ import { insumosService } from "../services/insumoService.js";
 import { logger } from "../config/logger.js";
 
 export const insumosController = {
+
+  
   async create(req: Request, res: Response) {
     logger.info("[InsumosController] POST /api/insumos", { body: req.body });
     try {
@@ -16,18 +18,27 @@ export const insumosController = {
     }
   },
 
-  async list(req: Request, res: Response) {
-    logger.info("[InsumosController] GET /api/insumos", { query: req.query });
-    try {
-      const insumos = await insumosService.list();
-      logger.info("[InsumosController] Insumos listados", { count: insumos.length });
-      res.json(insumos);
-    } catch (err: any) {
-      logger.error("[InsumosController] Error al listar insumos", { error: err.message });
-      res.status(500).json({ error: err.message });
-    }
-  },
+async list(req: Request, res: Response) {
+  try {
+    const insumos = await insumosService.list({
+      q: req.query.q as string,
+      clave: req.query.clave as string,
+      servicio: req.user?.servicio,
+      id_subalmacen: req.user?.id_subalmacen,
+      rol: req.user?.rol, // 👈 importante
+    });
 
+    res.json(insumos);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+},
+
+
+
+
+
+  
   async get(req: Request, res: Response) {
     logger.info("[InsumosController] GET /api/insumos/:id", { id: req.params.id });
     try {
