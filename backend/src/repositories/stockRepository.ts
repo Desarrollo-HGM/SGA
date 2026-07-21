@@ -1,4 +1,5 @@
 // src/repositories/stockRepository.ts
+import { id } from "date-fns/locale";
 import { db } from "../config/db.js";
 import { logger } from "../config/logger.js";
 
@@ -54,8 +55,9 @@ export const stockRepository = {
       logger.debug("[StockRepository] SQL generada:", query.toString());
 
       const rows = await query;
-
+      logger.debug("[StockRepository] Filas obtenidas:", { count: rows.length });
       logger.info("[StockRepository] Stock consolidado obtenido", { count: rows.length });
+      logger.info("[StockRepository] Stock consolidado obtenido", { id_subalmacen: subalmacenId, count: rows.length });
       return rows;
     } catch (err: any) {
       // 👇 imprime el error completo con todas sus propiedades

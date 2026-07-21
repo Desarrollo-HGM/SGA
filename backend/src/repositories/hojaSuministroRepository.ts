@@ -92,3 +92,22 @@ export async function getHojaById(id_hoja: number) {
 
   return { ...hoja, detalles };
 }
+
+
+
+export async function updateDetalleEstadoBySolicitud(id_solicitudes: number, estado: EstadoDetalle) {
+  await db('solicitudes_detalle').where({ id_solicitudes }).update({ estado });
+}
+
+export async function liberarReservasBySolicitud(id_solicitudes: number) {
+  await db('reservas').where({ id_solicitud: id_solicitudes }).update({ estado: 'Liberada' });
+}
+
+export async function getSolicitudDetalles(id_solicitudes: number) {
+  return db('solicitudes_detalle').where({ id_solicitudes });
+}
+
+export async function getReservasBySolicitud(id_solicitudes: number) {
+  return db('reservas').where({ id_solicitud: id_solicitudes });
+}
+

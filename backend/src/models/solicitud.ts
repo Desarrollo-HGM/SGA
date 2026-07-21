@@ -1,7 +1,7 @@
 // src/models/solicitud.ts
 
 // Estados posibles de la solicitud
-export type EstadoSolicitud = "Pendiente" | "Completada" | "Parcial" | "Cancelada";
+export type EstadoSolicitud = "Pendiente" | "Completada" | "Parcial" | "Cancelada" | "Rechazada";
 
 // Estados posibles de cada detalle de insumo
 export type EstadoDetalle = "Pendiente" | "Completada" | "Parcial" | "Rechazada";
