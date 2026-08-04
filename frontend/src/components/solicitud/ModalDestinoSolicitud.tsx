@@ -6,7 +6,7 @@ import { useAuth } from "../../hooks/useAuth"; // 👈 tu hook de autenticación
 interface Props {
   destino: "central" | "guarda" | null;
   setDestino: (destino: "central" | "guarda") => void;
-   setTipoSolicitud: (tipo: string) => void; // 👈 requerido
+   setTipoSolicitud: (tipo: string) => void; //  requerido
 }
 
 export default function ModalDestinoSolicitud({
@@ -16,11 +16,11 @@ export default function ModalDestinoSolicitud({
 }: Props) {
   const { user } = useAuth();
 
-  // 🚫 Si el rol es solicitante, no mostramos modal y asignamos Clinica
+  //  Si el rol es solicitante, no mostramos modal y asignamos Clinica
   useEffect(() => {
     if (user?.rol === "solicitante") {
-      setDestino("guarda");        // 👈 destino por defecto
-      setTipoSolicitud("Clinica"); // 👈 tipoSolicitud automático
+      setDestino("guarda");        // destino por defecto
+      setTipoSolicitud("Clinica"); //  tipoSolicitud automático
     }
   }, [user, setDestino, setTipoSolicitud]);
 

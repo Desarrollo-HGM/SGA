@@ -167,10 +167,11 @@ const handleEnviarSolicitud = async (tipoSolicitud: string, justificacion: strin
   Solicitudes
 </Text>
 
-  {/* 2. 🔔 CAMPANA (DESACOPLADA) */}
-  <CampanaContainer /> 
+  {/*  CAMPANA  */}
+{user.rol !== "solicitante" && <CampanaContainer />}
 
-  {/* 3. CARRITO DE COMPRAS */}
+
+  {/*  CARRITO DE COMPRAS */}
   <Indicator
     label={cart.length}
     size={16}
