@@ -5,10 +5,10 @@ export interface User {
   id: number;
   username: string;
   rol: Rol;
-  acceso: string;            // si tu backend lo devuelve
-  nombreCompleto: string;    // este es el que falta
+  acceso: string;           
+  nombreCompleto: string;    
   rfc: string;    
   servicio?: string;
   subalmacen?: string;   // 
-  id_subalmacen?: number; //          // también lo devuelve tu AuthService
+  id_subalmacen?: number; //          
 }
