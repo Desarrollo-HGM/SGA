@@ -16,7 +16,7 @@ export const insumosRepository = {
     } catch (err: any) {
       logger.error("[InsumosRepository] Error al crear insumo", { error: err.message, insumo });
       throw err;
-    }
+    } 
   },
 
 async findAll(filter?: { q?: string; clave?: string; servicio?: string; id_subalmacen?: number; rol?: string }) {
