@@ -30,16 +30,18 @@ async findAll(filter?: { q?: string; clave?: string; servicio?: string; id_subal
         .orWhereILike("descripcion_larga", `%${filter.q}%`);
     }
 
-    if (filter?.clave) query = query.where("clave", filter.clave);
-    if (filter?.servicio) query = query.where("servicio", filter.servicio);
+    if (filter?.clave) {
+      query = query.where("clave", filter.clave);
+    }
+
+    if (filter?.servicio) {
+      query = query.where("servicio", filter.servicio);
+    }
 
     
-
-if (filter?.id_subalmacen && filter?.rol?.toLowerCase() !== "admin") {
-  query = query.where("id_subalmacen", filter.id_subalmacen);
-}
-
-
+    if (filter?.id_subalmacen && filter?.rol?.toLowerCase() !== "admin") {
+      query = query.where("id_subalmacen", filter.id_subalmacen);
+    }
 
     const result = await query.orderBy("id_insumos", "desc");
     logger.info("[InsumosRepository] Insumos encontrados", { count: result.length });
@@ -49,6 +51,7 @@ if (filter?.id_subalmacen && filter?.rol?.toLowerCase() !== "admin") {
     throw err;
   }
 }
+
 ,
 
 

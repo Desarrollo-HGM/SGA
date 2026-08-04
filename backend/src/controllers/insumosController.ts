@@ -18,15 +18,24 @@ export const insumosController = {
     }
   },
 
+  
 async list(req: Request, res: Response) {
   try {
-    const insumos = await insumosService.list({
-      q: req.query.q as string,
-      clave: req.query.clave as string,
-      servicio: req.user?.servicio,
-      id_subalmacen: req.user?.id_subalmacen,
-      rol: req.user?.rol, // 👈 importante
-    });
+    const params: {
+      q?: string;
+      clave?: string;
+      servicio?: string;
+      id_subalmacen?: number;
+      rol?: string;
+    } = {};
+
+    if (req.query.q) params.q = req.query.q as string;
+    if (req.query.clave) params.clave = req.query.clave as string;
+    if (req.user?.servicio) params.servicio = req.user.servicio;
+    if (req.user?.id_subalmacen !== undefined) params.id_subalmacen = req.user.id_subalmacen;
+    if (req.user?.rol) params.rol = req.user.rol; // 👈 importante
+
+    const insumos = await insumosService.list(params);
 
     res.json(insumos);
   } catch (err: any) {

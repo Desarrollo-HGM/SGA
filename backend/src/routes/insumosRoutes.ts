@@ -9,7 +9,7 @@ const router = Router();
 // Crear insumo: solo admin y almacén con nivel Alto
 router.post(
   "/",
-  requireRole(["admin", "almacen"]),
+  requireRole(["admin", "almacen",]),
   requireAccessLevel(["Alto"]),
   requireServicio(["Almacén Central"]), // 👈 ejemplo de servicio permitido
   insumosController.create
@@ -18,7 +18,7 @@ router.post(
 // Listar insumos: solicitante, guarda, almacén con nivel Medio o Alto
 router.get(
   "/",
-  requireRole(["solicitante", "guarda", "almacen"]),
+  requireRole(["solicitante", "guarda", "almacen","admin"]),
   requireAccessLevel(["Medio", "Alto"]),
   requireServicio(["Clínica", "Urgencias", "Almacén Central"]),
   insumosController.list
@@ -27,7 +27,7 @@ router.get(
 // Obtener insumo por ID
 router.get(
   "/:id",
-  requireRole(["solicitante", "guarda", "almacen"]),
+  requireRole(["solicitante", "guarda", "almacen","admin"]),
   requireAccessLevel(["Medio", "Alto"]),
   requireServicio(["Clínica", "Urgencias", "Almacén Central"]),
   insumosController.get
